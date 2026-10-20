@@ -6,6 +6,7 @@ from collections.abc import Callable
 import plopp as pp
 import scipp as sc
 from plopp.backends.matplotlib.figure import WidgetFigure
+from plopp.backends.matplotlib.utils import is_widget_backend
 from plopp.backends.matplotlib.utils import make_figure
 from plopp.plotting._slicer import SlicerPlot
 from plopp.plotting._slicer import _maybe_reduce_dim
@@ -47,6 +48,63 @@ def add_x_axis_coord(data: sc.Dataset, x_axis: str) -> sc.Dataset:
     return data.assign_coords({x_axis: Q_AXIS_TRANSFORMS[x_axis](data.coords['Q'])})
 
 
+def _static_plot_with_residuals(
+    dg: sc.DataGroup,
+    *,
+    residuals_key: str,
+    figsize: tuple[float, float] | None = None,
+    **kwargs: object,
+) -> object:
+    """
+    Plot one-dimensional data and its residuals on two aligned axes, without widgets.
+
+    ``slicerplot_with_residuals`` uses this when the Matplotlib backend is not a widget backend
+    (for example ``%matplotlib inline``), because the slicer needs widgets.
+
+    Parameters
+    ----------
+    dg : sc.DataGroup
+        One-dimensional data, including the residuals.
+    residuals_key : str
+        Key of the residuals in ``dg``.
+    figsize : tuple[float, float] | None, default=None
+        Size of the figure. If None, (6, 6) is used.
+    **kwargs : object
+        Passed to the plot of the data.
+
+    Returns
+    -------
+    object
+        The plopp figure of the data. Its Matplotlib figure also holds the residuals on the lower
+        axes.
+
+    Raises
+    ------
+    RuntimeError
+        If ``dg`` has more than one dimension.
+    """
+    if len(dg.dims) > 1:
+        raise RuntimeError(
+            'Without a widget backend only one-dimensional data can be plotted. Select a single '
+            'Q with Q_index, or use `%matplotlib widget` for the Q slider.'
+        )
+
+    mpl_fig = make_figure(figsize=(6.0, 6.0) if figsize is None else figsize)
+    main_ax, res_ax = mpl_fig.subplots(
+        nrows=2,
+        ncols=1,
+        sharex=True,
+        gridspec_kw={'height_ratios': [2, 1]},
+    )
+
+    fig = pp.plot({k: da for k, da in dg.items() if k != residuals_key}, ax=main_ax, **kwargs)
+    pp.plot(dg[residuals_key], ax=res_ax)
+
+    main_ax.set_xlabel('')
+    main_ax.tick_params(labelbottom=False)
+    return fig
+
+
 def slicerplot_with_residuals(
     dg: sc.DataGroup,
     *,
@@ -61,6 +119,9 @@ def slicerplot_with_residuals(
     This function is called internally by ``Analysis.plot_data_and_model`` and
     ``Analysis1d.plot_data_and_model``. It can also be used directly with any ``sc.DataGroup`` that
     contains a residuals array.
+
+    With a non-widget backend such as ``%matplotlib inline``, one-dimensional data is drawn as a
+    plain figure without a slider.
 
     Examples
     --------
@@ -112,6 +173,10 @@ def slicerplot_with_residuals(
 
     if residuals_key not in dg:
         raise ValueError(f"Residuals key '{residuals_key}' not found in DataGroup")
+
+    if not is_widget_backend():
+        kwargs.pop('autoscale', None)
+        return _static_plot_with_residuals(dg, residuals_key=residuals_key, **kwargs)
 
     # Draw the data and the residuals as two axes of one Matplotlib figure with a shared x axis.
     # Two separate figures are laid out independently, so their axes only line up when their y

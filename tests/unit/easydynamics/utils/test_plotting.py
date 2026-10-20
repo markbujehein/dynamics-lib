@@ -52,6 +52,13 @@ class TestAdd_x_axis_coord:
 
 
 class TestSlicerplot_with_residuals:
+    @pytest.fixture(autouse=True)
+    def widget_backend(self):
+        # Under pytest the Matplotlib backend is not a widget backend, so slicerplot_with_residuals
+        # would take the static path. Force the widget path, which these tests are about.
+        with patch('easydynamics.utils.plotting.is_widget_backend', return_value=True):
+            yield
+
     @pytest.fixture
     def datagroup(self):
         return sc.DataGroup(
@@ -256,3 +263,38 @@ class TestSlicerplot_with_residuals:
             assert main_ax.get_xlim() == res_ax.get_xlim()
         finally:
             plt.switch_backend('Agg')
+
+
+class TestSlicerplot_with_residuals_static_backend:
+    @pytest.fixture(autouse=True)
+    def static_backend(self):
+        with patch('easydynamics.utils.plotting.is_widget_backend', return_value=False):
+            yield
+
+    def test_one_dimensional_data_is_drawn_on_two_aligned_axes(self):
+        # WHEN
+        x = sc.linspace('x', 0.0, 1.0, 5, unit='meV')
+        dg = sc.DataGroup(
+            Data=sc.DataArray(sc.arange('x', 5.0, unit=''), coords={'x': x}),
+            Model=sc.DataArray(sc.arange('x', 5.0, unit=''), coords={'x': x}),
+            Residuals=sc.DataArray(sc.zeros(dims=['x'], shape=[5], unit=''), coords={'x': x}),
+        )
+
+        # THEN
+        fig = slicerplot_with_residuals(dg, keep='x', operation='sum')
+
+        # EXPECT
+        axes = fig.canvas.fig.axes
+        assert len(axes) == 2
+        assert axes[0].get_xlabel() == ''
+
+    def test_data_with_a_slider_dimension_raises(self):
+        # WHEN
+        dg = sc.DataGroup(
+            Data=sc.DataArray(sc.zeros(dims=['Q', 'x'], shape=[2, 3], unit='')),
+            Residuals=sc.DataArray(sc.zeros(dims=['Q', 'x'], shape=[2, 3], unit='')),
+        )
+
+        # THEN EXPECT
+        with pytest.raises(RuntimeError, match='Select a single Q with Q_index'):
+            slicerplot_with_residuals(dg, keep='x')
