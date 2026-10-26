@@ -77,6 +77,11 @@ class TestDiffusionInSphere:
         # The physics tests check the full sum, all 98 terms
         return DiffusionInSphere(number_of_lorentzians=98)
 
+    def test_create_weight_requires_float_Q(self, model):
+        # WHEN THEN EXPECT
+        with pytest.raises(TypeError, match='Q must be a float'):
+            model._create_weight(1, 1)
+
     # ------------------------------------------------------------------
     # Roots
     # ------------------------------------------------------------------
