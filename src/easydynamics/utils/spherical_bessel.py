@@ -1,15 +1,14 @@
 # SPDX-FileCopyrightText: 2026 EasyScience contributors <https://github.com/easyscience>
 # SPDX-License-Identifier: BSD-3-Clause
 """
-Spherical Bessel functions of the first kind, j_n(x), computed by scipy's compiled code called
-from numba.
+Spherical Bessel functions of the first kind, j_n(x), computed by scipy's compiled code called from
+numba.
 
 ``scipy.special.spherical_jn`` has a high cost per call in scipy 1.18. The numba kernel calls the
 same compiled C function directly (through ``scipy.special.cython_special``), so its results are
-bit-for-bit those of scipy, about ten times faster for small arrays. The name of that C function
-is a scipy implementation detail; if it cannot be found, or numba is not installed (it is
-optional: ``pip install easydynamics[fast]``), scipy's Python function is used instead, with the
-same values.
+bit-for-bit those of scipy, about ten times faster for small arrays. The name of that C function is
+a scipy implementation detail; if it cannot be found, or numba is not installed (it is optional:
+``pip install easydynamics[fast]``), scipy's Python function is used instead, with the same values.
 """
 
 import ctypes
@@ -28,8 +27,8 @@ def spherical_jn(order: int | np.ndarray, x: float | np.ndarray) -> np.ndarray:
     """
     Calculate the spherical Bessel function of the first kind, j_order(x).
 
-    ``order`` and ``x`` broadcast against each other, as in ``scipy.special.spherical_jn``, so
-    all orders can be computed in one call, e.g. ``spherical_jn(np.arange(5)[:, None], x)``.
+    ``order`` and ``x`` broadcast against each other, as in ``scipy.special.spherical_jn``, so all
+    orders can be computed in one call, e.g. ``spherical_jn(np.arange(5)[:, None], x)``.
 
     Parameters
     ----------

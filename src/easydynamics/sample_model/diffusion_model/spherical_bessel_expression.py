@@ -4,8 +4,8 @@
 Spherical Bessel functions written as dependency expressions.
 
 EasyScience Core evaluates dependency expressions with asteval and cannot call scipy or numba
-there, so a model whose dependent Parameters need j_l(x) (for example ``DiffusionInSphere``)
-writes it out in elementary functions with ``spherical_bessel_expression``. Python-side code uses
+there, so a model whose dependent Parameters need j_l(x) (for example ``DiffusionInSphere``) writes
+it out in elementary functions with ``spherical_bessel_expression``. Python-side code uses
 ``easydynamics.utils.spherical_bessel.spherical_jn`` instead.
 """
 
@@ -24,17 +24,17 @@ def spherical_bessel_expression(order: int) -> str:
     before it in the dependency expression. For $x \geq \max(l, 1)$ it is the finite sum for
     half-integer Bessel functions,
 
-    $$ j_l(x) = \frac{1}{x}\left[\sin\left(x - \frac{l\pi}{2}\right) \sum_k
-    \frac{(-1)^k (l+2k)!}{(2k)!\,(l-2k)!\,(2x)^{2k}} + \cos\left(x - \frac{l\pi}{2}\right)
-    \sum_k \frac{(-1)^k (l+2k+1)!}{(2k+1)!\,(l-2k-1)!\,(2x)^{2k+1}}\right], $$
+    $$ j_l(x) = \frac{1}{x}\left[\sin\left(x - \frac{l\pi}{2}\right) \sum_k \frac{(-1)^k
+    (l+2k)!}{(2k)!\,(l-2k)!\,(2x)^{2k}} + \cos\left(x - \frac{l\pi}{2}\right) \sum_k \frac{(-1)^k
+    (l+2k+1)!}{(2k+1)!\,(l-2k-1)!\,(2x)^{2k+1}}\right], $$
 
     and below it the power series
 
     $$ j_l(x) = \frac{x^l}{(2l+1)!!} \sum_m \frac{(-y/2)^m}{m!\,(2l+3)(2l+5)\cdots(2l+2m+1)}, $$
 
-    written in nested (Horner) form, with as many terms as needed for SERIES_TOLERANCE at
-    $x = \max(l, 1)$. The finite sum loses digits to cancellation at small x and the series at
-    large x; the switch at $x = \max(l, 1)$ keeps both accurate.
+    written in nested (Horner) form, with as many terms as needed for SERIES_TOLERANCE at $x =
+    \max(l, 1)$. The finite sum loses digits to cancellation at small x and the series at large x;
+    the switch at $x = \max(l, 1)$ keeps both accurate.
 
     Parameters
     ----------

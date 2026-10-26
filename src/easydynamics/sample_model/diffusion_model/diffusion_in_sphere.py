@@ -80,12 +80,12 @@ def _root_arrays() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.n
     r"""
     Per-root constants of the weights, computed once.
 
-    The weight of root x of order l is $(2l+1) \frac{6x^2}{x^2 - l(l+1)} J^2$ with
-    $J(a) = \frac{a j_{l+1}(a) - l j_l(a)}{a^2 - x^2} = \frac{-a j_l'(a)}{a^2 - x^2}$, a = QR.
-    At a = x both numerator and denominator vanish. From the spherical Bessel equation at
-    $j_l'(x) = 0$: $j'' = -(1 - l(l+1)/x^2) j$ and $j''' = -(2/x) j'' - 2l(l+1) j / x^3$, so
-    with $g = -a j_l'$ and $h = a^2 - x^2$: $J(x) = g'/h' = (x^2 - l(l+1)) j_l(x) / (2x^2)$ and
-    $J'(x) = (2x g'' - 2 g') / (2 (2x)^2)$, with $g' = -x j''$ and $g'' = -2j'' - x j'''$.
+    The weight of root x of order l is $(2l+1) \frac{6x^2}{x^2 - l(l+1)} J^2$ with $J(a) = \frac{a
+    j_{l+1}(a) - l j_l(a)}{a^2 - x^2} = \frac{-a j_l'(a)}{a^2 - x^2}$, a = QR. At a = x both
+    numerator and denominator vanish. From the spherical Bessel equation at $j_l'(x) = 0$: $j'' =
+    -(1 - l(l+1)/x^2) j$ and $j''' = -(2/x) j'' - 2l(l+1) j / x^3$, so with $g = -a j_l'$ and $h =
+    a^2 - x^2$: $J(x) = g'/h' = (x^2 - l(l+1)) j_l(x) / (2x^2)$ and $J'(x) = (2x g'' - 2 g') / (2
+    (2x)^2)$, with $g' = -x j''$ and $g'' = -2j'' - x j'''$.
 
     Returns
     -------
@@ -110,23 +110,21 @@ class DiffusionInSphere(DeltaLorentzianDiffusionModelBase):
     r"""
     Model of diffusion inside an impermeable sphere.
 
-    A particle diffuses with diffusion coefficient $D$ inside a sphere of radius $R$ that it
-    cannot leave. The sphere is isotropic, so the scattering depends only on the magnitude of $Q$:
+    A particle diffuses with diffusion coefficient $D$ inside a sphere of radius $R$ that it cannot
+    leave. The sphere is isotropic, so the scattering depends only on the magnitude of $Q$:
 
     $$ S(Q, E) = A_0(Q)\,\delta(E) + \sum_{(l, n)} A_{nl}(Q)\, L(E, \Gamma_{nl}) $$
 
     with
 
-    $$ A_0(Q) = \left(\frac{3 j_1(QR)}{QR}\right)^2,\quad
-    A_{nl}(Q) = (2l+1) \frac{6 x_{nl}^2}{x_{nl}^2 - l(l+1)}
-    \left(\frac{QR\, j_{l+1}(QR) - l\, j_l(QR)}{(QR)^2 - x_{nl}^2}\right)^2,\quad
-    \Gamma_{nl} = \frac{\hbar x_{nl}^2 D}{R^2} $$
+    $$ A_0(Q) = \left(\frac{3 j_1(QR)}{QR}\right)^2,\quad A_{nl}(Q) = (2l+1) \frac{6
+    x_{nl}^2}{x_{nl}^2 - l(l+1)} \left(\frac{QR\, j_{l+1}(QR) - l\, j_l(QR)}{(QR)^2 -
+    x_{nl}^2}\right)^2,\quad \Gamma_{nl} = \frac{\hbar x_{nl}^2 D}{R^2} $$
 
     where $j_l$ are the spherical Bessel functions, $x_{nl}$ the roots of $j_l'(x) = 0$ (no flux
-    through the surface) and $L(E, \Gamma)$ a Lorentzian with half width at half maximum
-    $\Gamma$. $A_0$ is the EISF and $A_{nl}$ the QISF of the root $x_{nl}$. The widths do not
-    depend on $Q$; only the QISF do. At $QR = x_{nl}$ the QISF is a 0/0, and its exact limit is
-    used there.
+    through the surface) and $L(E, \Gamma)$ a Lorentzian with half width at half maximum $\Gamma$.
+    $A_0$ is the EISF and $A_{nl}$ the QISF of the root $x_{nl}$. The widths do not depend on $Q$;
+    only the QISF do. At $QR = x_{nl}$ the QISF is a 0/0, and its exact limit is used there.
 
     The sum runs over the lowest ``number_of_lorentzians`` of the 98 roots below 26.84, the same
     roots as reference 3. A warning is raised if the truncation leaves out more than 1e-3 of the
@@ -134,9 +132,9 @@ class DiffusionInSphere(DeltaLorentzianDiffusionModelBase):
     about 9. Each term adds two dependent Parameters per Q value, which are slow to update in
     EasyScience Core 2.5.1, so the default is 10 terms.
 
-    The Lorentzian of order $j$, from 1 to ``number_of_lorentzians``, belongs to the $j$-th root
-    in increasing $x$, and ``roots`` gives its $(x, l, n)$. The radius is free by default, since
-    the size of the sphere is usually what is fitted.
+    The Lorentzian of order $j$, from 1 to ``number_of_lorentzians``, belongs to the $j$-th root in
+    increasing $x$, and ``roots`` gives its $(x, l, n)$. The radius is free by default, since the
+    size of the sphere is usually what is fitted.
 
     References
     ----------
@@ -457,10 +455,10 @@ class DiffusionInSphere(DeltaLorentzianDiffusionModelBase):
         Create ComponentCollections for the model at the current Q values.
 
         Each collection holds a delta function with area $K A_0(Q)$ (scale times EISF) and
-        number_of_lorentzians Lorentzians with widths $\Gamma_{nl}$ and areas $K A_{nl}(Q)$
-        (scale times the QISF of that order), built by the base class. The sum is truncated, so a
-        warning is raised if it omits more than MISSING_WEIGHT_TOLERANCE of the weight. The
-        created collections are installed on the model, so the returned list is the live one.
+        number_of_lorentzians Lorentzians with widths $\Gamma_{nl}$ and areas $K A_{nl}(Q)$ (scale
+        times the QISF of that order), built by the base class. The sum is truncated, so a warning
+        is raised if it omits more than MISSING_WEIGHT_TOLERANCE of the weight. The created
+        collections are installed on the model, so the returned list is the live one.
 
         Returns
         -------
@@ -616,8 +614,8 @@ class DiffusionInSphere(DeltaLorentzianDiffusionModelBase):
         """
         Warn if truncating the sum at number_of_lorentzians terms omits too much weight.
 
-        The warning is raised if the missing weight exceeds MISSING_WEIGHT_TOLERANCE at any of
-        the model's Q values. Without Q values there is nothing to check.
+        The warning is raised if the missing weight exceeds MISSING_WEIGHT_TOLERANCE at any of the
+        model's Q values. Without Q values there is nothing to check.
         """
         if self.Q is None:
             return
