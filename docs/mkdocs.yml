@@ -213,7 +213,8 @@ nav:
           - DeltaLorentz: tutorials/delta_lorentz.ipynb
           - Diffusion model: tutorials/diffusion_model.ipynb
           - Equivalent sites on a circle: tutorials/equivalent_sites_circle.ipynb
-          - Jump sites, log-normal distribution: tutorials/jump_sites_log_normal_distribution.ipynb
+          - Jump sites, log-normal distribution:
+              tutorials/jump_sites_log_normal_distribution.ipynb
           - 3D Gaussian model: tutorials/gaussian_model_3d.ipynb
           - Diffusion in a sphere: tutorials/diffusion_in_sphere.ipynb
           - Mittag-Leffler relaxation: tutorials/mittag_leffler.ipynb
