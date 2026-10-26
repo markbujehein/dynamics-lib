@@ -6,10 +6,10 @@ from numba.
 
 ``scipy.special.spherical_jn`` has a high cost per call in scipy 1.18. The numba kernel calls the
 same compiled C function directly (through ``scipy.special.cython_special``), so its results are
-bit-for-bit those of scipy, about ten times faster for small arrays (measured in
-``tests/manual/2026-10-23-spherical-bessel-benchmarks.md``). The name of that C function is a
-scipy implementation detail; if it cannot be found, or numba is not installed (it is optional:
-``pip install easydynamics[fast]``), scipy's Python function is used instead, with the same values.
+bit-for-bit those of scipy, about ten times faster for small arrays. The name of that C function
+is a scipy implementation detail; if it cannot be found, or numba is not installed (it is
+optional: ``pip install easydynamics[fast]``), scipy's Python function is used instead, with the
+same values.
 """
 
 import ctypes

@@ -42,11 +42,11 @@ DEFAULT_NUMBER_OF_LORENTZIANS = 10
 
 @functools.cache
 def sphere_roots() -> tuple[tuple[float, int, int], ...]:
-    """
-    Find the roots x_nl of j_l'(x) = 0 between 0 and MAXIMUM_ROOT, sorted by x.
+    r"""
+    Find the roots $x_{nl}$ of $j_l'(x) = 0$ between 0 and MAXIMUM_ROOT, sorted by x.
 
     n counts the roots of each l from 0, except for l = 0, whose root x = 0 is the elastic term:
-    there n counts from 1, as in Mantid and in Bicout (2000). Computed once, on first use.
+    there n counts from 1, as in Bicout (2000). Computed once, on first use.
 
     Returns
     -------
@@ -108,7 +108,10 @@ def _root_arrays() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.n
 
 class DiffusionInSphere(DeltaLorentzianDiffusionModelBase):
     r"""
-    Model of diffusion inside an impermeable sphere (Volino and Dianoux).
+    Model of diffusion inside an impermeable sphere.
+
+    A particle diffuses with diffusion coefficient $D$ inside a sphere of radius $R$ that it
+    cannot leave. The sphere is isotropic, so the scattering depends only on the magnitude of $Q$:
 
     $$ S(Q, E) = A_0(Q)\,\delta(E) + \sum_{(l, n)} A_{nl}(Q)\, L(E, \Gamma_{nl}) $$
 
@@ -119,19 +122,28 @@ class DiffusionInSphere(DeltaLorentzianDiffusionModelBase):
     \left(\frac{QR\, j_{l+1}(QR) - l\, j_l(QR)}{(QR)^2 - x_{nl}^2}\right)^2,\quad
     \Gamma_{nl} = \frac{\hbar x_{nl}^2 D}{R^2} $$
 
-    where $R$ is the radius of the sphere, $D$ the diffusion coefficient, $j_l$ the spherical
-    Bessel functions and $x_{nl}$ the roots of $j_l'(x) = 0$ (no flux through the surface). The sum
-    runs over the lowest ``number_of_lorentzians`` of the 98 roots below 26.84 (Mantid's
-    ``DiffSphere`` uses all 98); it is truncated, and a warning is raised if it omits more than
-    1e-3 of the weight (with the default 10 terms from QR of about 2, with all 98 from QR of about
-    10). Each term adds two dependent Parameters per Q value, which are slow to update in
-    EasyScience Core 2.5.1, so the default is 10 terms. At $QR = x_{nl}$ the
-    weight is a 0/0; its exact limit is used there.
+    where $j_l$ are the spherical Bessel functions, $x_{nl}$ the roots of $j_l'(x) = 0$ (no flux
+    through the surface) and $L(E, \Gamma)$ a Lorentzian with half width at half maximum
+    $\Gamma$. $A_0$ is the EISF and $A_{nl}$ the QISF of the root $x_{nl}$. The widths do not
+    depend on $Q$; only the QISF do. At $QR = x_{nl}$ the QISF is a 0/0, and its exact limit is
+    used there.
 
-    The Lorentzian of order j, from 1 to number_of_lorentzians, belongs to the j-th root in
-    increasing x;
-    ``roots`` gives its (x, l, n). The radius is free by default, since the size of the sphere is
-    usually what is fitted.
+    The sum runs over the lowest ``number_of_lorentzians`` of the 98 roots below 26.84, the same
+    roots as reference 3. A warning is raised if the truncation leaves out more than 1e-3 of the
+    weight: with the default 10 terms this happens from QR of about 1.8, with all 98 from QR of
+    about 9. Each term adds two dependent Parameters per Q value, which are slow to update in
+    EasyScience Core 2.5.1, so the default is 10 terms.
+
+    The Lorentzian of order $j$, from 1 to ``number_of_lorentzians``, belongs to the $j$-th root
+    in increasing $x$, and ``roots`` gives its $(x, l, n)$. The radius is free by default, since
+    the size of the sphere is usually what is fitted.
+
+    References
+    ----------
+    1. F. Volino and A. J. Dianoux, Mol. Phys. 41, 271 (1980), doi:10.1080/00268978000102761.
+    2. D. J. Bicout, Phys. Rev. E 62, 261 (2000), doi:10.1103/PhysRevE.62.261.
+    3. Mantid, ``InelasticDiffSphere``, which uses the same 98 roots,
+       https://github.com/mantidproject/mantid/blob/6ec66a6f524a7ec9d4258351fe3001c66c63dbe5/Framework/CurveFitting/src/Functions/InelasticDiffSphere.cpp#L53-L69.
 
     Examples
     --------
@@ -142,15 +154,12 @@ class DiffusionInSphere(DeltaLorentzianDiffusionModelBase):
     import numpy as np
     import easydynamics as edyn
 
-    model = edyn.DiffusionInSphere(radius=3.0, diffusion_coefficient=0.1, Q=np.linspace(0.3, 2, 7))
+    model = edyn.DiffusionInSphere(
+        radius=1.0,  # angstrom
+        diffusion_coefficient=0.1,  # angstrom^2/ps
+        Q=np.linspace(0.3, 1.5, 7),  # QR up to 1.5, below the truncation warning
+    )
     ```
-
-    References
-    ----------
-    1. F. Volino and A. J. Dianoux, Mol. Phys. 41, 271 (1980), doi:10.1080/00268978000102761.
-    2. D. J. Bicout, Phys. Rev. E 62, 261 (2000), doi:10.1103/PhysRevE.62.261.
-    3. Mantid InelasticDiffSphere,
-       https://github.com/mantidproject/mantid/blob/main/Framework/CurveFitting/src/Functions/InelasticDiffSphere.cpp.
     """
 
     _order_symbol = 'j'  # components are named '<lorentzian_name>_j<j>'
@@ -189,9 +198,8 @@ class DiffusionInSphere(DeltaLorentzianDiffusionModelBase):
         diffusion_coefficient : Numeric, default=1.0
             Diffusion coefficient D in angstrom^2/ps. Must be positive.
         number_of_lorentzians : int, default=DEFAULT_NUMBER_OF_LORENTZIANS
-            Number of terms in the sum, the lowest roots first; at most 98 (Mantid's limit, and
-            Mantid's choice). Fewer terms make fits faster; the model warns if they omit too much
-            weight.
+            Number of terms in the sum, the lowest roots first; at most 98, the roots below 26.84.
+            Fewer terms make fits faster; the model warns if they omit too much weight.
         Q : Q_type | None, default=None
             Q values for the model. If None, Q is not set.
         x_unit : str | sc.Unit, default='meV'
@@ -328,8 +336,8 @@ class DiffusionInSphere(DeltaLorentzianDiffusionModelBase):
 
     @property
     def roots(self) -> tuple[tuple[float, int, int], ...]:
-        """
-        Get the roots x_nl of the Lorentzians, in the order of the components.
+        r"""
+        Get the roots $x_{nl}$ of the Lorentzians, in the order of the components.
 
         Returns
         -------
@@ -344,7 +352,8 @@ class DiffusionInSphere(DeltaLorentzianDiffusionModelBase):
 
     def calculate_width(self, Q: Q_type | None = None, order: int = 1) -> np.ndarray:
         r"""
-        Calculate the half-width at half-maximum (HWHM) of the Lorentzian of a given order.
+        Calculate the half-width at half-maximum (HWHM) $\Gamma_{nl}$ of the Lorentzian of order
+        $j$.
 
         The width is $\hbar x_{nl}^2 D / R^2$ and does not depend on Q.
 
@@ -368,8 +377,8 @@ class DiffusionInSphere(DeltaLorentzianDiffusionModelBase):
         return rate.to(unit=self.x_unit).value * x**2 * np.ones_like(Q)
 
     def calculate_EISF(self, Q: Q_type | None = None) -> np.ndarray:
-        """
-        Calculate the Elastic Incoherent Structure Factor (EISF), (3 j_1(QR) / QR)^2.
+        r"""
+        Calculate the Elastic Incoherent Structure Factor (EISF), $(3 j_1(QR) / QR)^2$.
 
         Parameters
         ----------
@@ -387,8 +396,9 @@ class DiffusionInSphere(DeltaLorentzianDiffusionModelBase):
         return np.where(QR == 0, 1.0, EISF)
 
     def calculate_QISF_order(self, Q: Q_type | None = None, order: int = 1) -> np.ndarray:
-        """
-        Calculate the quasi-elastic weight A_nl(Q) of the Lorentzian of a given order.
+        r"""
+        Calculate the Quasi-Elastic Incoherent Structure Factor (QISF) of one order, $A_{nl}(Q)$,
+        the weight of the Lorentzian of order $j$ (root $x_{nl}$).
 
         Parameters
         ----------
@@ -400,7 +410,7 @@ class DiffusionInSphere(DeltaLorentzianDiffusionModelBase):
         Returns
         -------
         np.ndarray
-            Weights (dimensionless).
+            QISF values of that order (dimensionless).
         """
         self._verify_order(order)
         Q = self._ensure_Q(Q)
@@ -408,8 +418,8 @@ class DiffusionInSphere(DeltaLorentzianDiffusionModelBase):
 
     def calculate_QISF(self, Q: Q_type | None = None) -> np.ndarray:
         """
-        Calculate the total Quasi-Elastic Incoherent Structure Factor (QISF), the sum of the
-        weights of the number_of_lorentzians Lorentzians.
+        Calculate the total Quasi-Elastic Incoherent Structure Factor (QISF), the sum of the QISF
+        of all number_of_lorentzians orders.
 
         Parameters
         ----------
@@ -446,9 +456,9 @@ class DiffusionInSphere(DeltaLorentzianDiffusionModelBase):
         r"""
         Create ComponentCollections for the model at the current Q values.
 
-        Each collection holds a delta function with area $\mathrm{scale}\, A_0(Q)$ and
-        number_of_lorentzians Lorentzians with widths $\Gamma_{nl}$ and areas
-        $\mathrm{scale}\, A_{nl}(Q)$ (built by the base class). The sum is truncated, so a
+        Each collection holds a delta function with area $K A_0(Q)$ (scale times EISF) and
+        number_of_lorentzians Lorentzians with widths $\Gamma_{nl}$ and areas $K A_{nl}(Q)$
+        (scale times the QISF of that order), built by the base class. The sum is truncated, so a
         warning is raised if it omits more than MISSING_WEIGHT_TOLERANCE of the weight. The
         created collections are installed on the model, so the returned list is the live one.
 
@@ -489,8 +499,8 @@ class DiffusionInSphere(DeltaLorentzianDiffusionModelBase):
 
     @staticmethod
     def _weights(QR: np.ndarray) -> np.ndarray:
-        """
-        Calculate the weights A_nl of all 98 Lorentzians at once.
+        r"""
+        Calculate the QISF $A_{nl}$ of all 98 roots at once.
 
         Parameters
         ----------
@@ -500,7 +510,7 @@ class DiffusionInSphere(DeltaLorentzianDiffusionModelBase):
         Returns
         -------
         np.ndarray
-            Weights with shape (len(QR), 98), the Lorentzian order j - 1 along the second axis.
+            QISF with shape (len(QR), 98), the Lorentzian order j - 1 along the second axis.
         """
         x, angular_order, coefficient, J0, J1 = _root_arrays()
         a = np.asarray(QR, dtype=float)[:, None]
@@ -513,9 +523,9 @@ class DiffusionInSphere(DeltaLorentzianDiffusionModelBase):
         return coefficient * J**2
 
     def _create_weight(self, Q: float, order: int) -> Parameter:
-        """
-        Create the dimensionless weight of a component as a dependent Parameter that follows the
-        radius.
+        r"""
+        Create the EISF (order 0) or the QISF of order $j$ as a dimensionless dependent Parameter
+        that follows the radius.
 
         The dependency expressions cannot call scipy, so the spherical Bessel functions are written
         out in elementary functions (``spherical_bessel_expression``). Near the root, where the
@@ -527,7 +537,7 @@ class DiffusionInSphere(DeltaLorentzianDiffusionModelBase):
         Q : float
             Scattering vector in 1/angstrom.
         order : int
-            The order j; 0 for the delta function.
+            The order j; 0 for the delta function (the EISF).
 
         Raises
         ------
@@ -537,7 +547,7 @@ class DiffusionInSphere(DeltaLorentzianDiffusionModelBase):
         Returns
         -------
         Parameter
-            The weight.
+            The EISF or QISF, which becomes the weight of the component.
         """
         if not isinstance(Q, float):
             raise TypeError('Q must be a float.')
@@ -616,8 +626,7 @@ class DiffusionInSphere(DeltaLorentzianDiffusionModelBase):
                 f'Truncating the sum at number_of_lorentzians={self.number_of_lorentzians} omits '
                 f'more than {MISSING_WEIGHT_TOLERANCE} of the spectral weight at some Q values. '
                 f'At most {len(sphere_roots())} terms are available (the roots below '
-                f'{MAXIMUM_ROOT}, the same limit as Mantid); with all of them this happens from '
-                'QR of about 10.',
+                f'{MAXIMUM_ROOT}); with all of them this happens from QR of about 9.',
                 UserWarning,
                 stacklevel=3,
             )
