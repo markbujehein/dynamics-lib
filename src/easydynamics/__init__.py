@@ -38,6 +38,7 @@ from easydynamics.sample_model import Gaussian
 from easydynamics.sample_model import GaussianModel3D
 from easydynamics.sample_model import HallRossJumpDiffusion
 from easydynamics.sample_model import InstrumentModel
+from easydynamics.sample_model import JumpSitesLogNormalDistribution
 from easydynamics.sample_model import JumpTranslationalDiffusion
 from easydynamics.sample_model import Lorentzian
 from easydynamics.sample_model import MittagLefflerDiffusion
@@ -82,6 +83,7 @@ __all__ = [
     'GaussianModel3D',
     'HallRossJumpDiffusion',
     'InstrumentModel',
+    'JumpSitesLogNormalDistribution',
     'JumpTranslationalDiffusion',
     'Lorentzian',
     'MittagLefflerDiffusion',
