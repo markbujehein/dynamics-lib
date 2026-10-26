@@ -14,6 +14,9 @@ from easydynamics.sample_model.diffusion_model.gaussian_model_3d import Gaussian
 from easydynamics.sample_model.diffusion_model.hall_ross_jump_diffusion import (
     HallRossJumpDiffusion,
 )
+from easydynamics.sample_model.diffusion_model.isotropic_rotational_diffusion import (
+    IsotropicRotationalDiffusion,
+)
 from easydynamics.sample_model.diffusion_model.jump_sites_log_normal_distribution import (
     JumpSitesLogNormalDistribution,
 )
@@ -32,6 +35,7 @@ __all__ = [
     'EquivalentSitesCircle',
     'GaussianModel3D',
     'HallRossJumpDiffusion',
+    'IsotropicRotationalDiffusion',
     'JumpSitesLogNormalDistribution',
     'JumpTranslationalDiffusion',
     'MittagLefflerDiffusion',

@@ -217,6 +217,7 @@ nav:
               tutorials/jump_sites_log_normal_distribution.ipynb
           - 3D Gaussian model: tutorials/gaussian_model_3d.ipynb
           - Diffusion in a sphere: tutorials/diffusion_in_sphere.ipynb
+          - Isotropic rotational diffusion: tutorials/isotropic_rotational_diffusion.ipynb
           - Mittag-Leffler relaxation: tutorials/mittag_leffler.ipynb
           - Sample model: tutorials/sample_model.ipynb
           - Instrument model: tutorials/instrument_model.ipynb

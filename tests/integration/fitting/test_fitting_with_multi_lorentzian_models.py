@@ -50,6 +50,13 @@ CASES = {
         {'scale': 1.0, 'radius': 1.0, 'diffusion_coefficient': 0.1},
         {'scale': 0.8, 'radius': 0.8, 'diffusion_coefficient': 0.07},
     ),
+    # QR <= 1.8 is well inside the default l_max = 6; the radius is fixed by default
+    'IsotropicRotationalDiffusion': (
+        edyn.IsotropicRotationalDiffusion,
+        {'radius': 1.2},
+        {'scale': 1.0, 'rotational_diffusion_coefficient': 0.1},
+        {'scale': 0.8, 'rotational_diffusion_coefficient': 0.07},
+    ),
 }
 
 
