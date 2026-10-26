@@ -102,9 +102,6 @@ class IsotropicRotationalDiffusion(DeltaLorentzianDiffusionModelBase):
         """
         Initialize a new IsotropicRotationalDiffusion model.
 
-        A radius or rotational diffusion coefficient that is not a number raises TypeError, one
-        below its minimum raises ValueError, as do invalid delta names (from the base class).
-
         Parameters
         ----------
         scale : Numeric, default=1.0
