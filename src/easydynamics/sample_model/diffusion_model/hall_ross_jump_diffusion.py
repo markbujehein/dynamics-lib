@@ -27,16 +27,18 @@ class HallRossJumpDiffusion(DiffusionModelBase):
     $$ \Gamma(Q) = \frac{\hbar}{\tau} \left( 1 - \exp\left(-\frac{Q^2 l^2}{2}\right) \right) $$
 
     where $\tau$ is the residence time and $l$ is the standard deviation of the jump-length
-    distribution, as in Mantid's ``HallRoss`` fit function. The mean-square jump length is
+    distribution, the convention of reference 2. The mean-square jump length is
     $\langle r^2 \rangle = 3 l^2$. At small $Q$ the width tends to $\hbar D Q^2$ with
     $D = l^2 / (2 \tau)$, and at large $Q$ to $\hbar / \tau$. $Q$ is assumed to have units of
     1/angstrom. Creates ComponentCollections with Lorentzian components for given Q-values.
 
     References
     ----------
-    P. L. Hall and D. K. Ross, *Incoherent neutron scattering functions for random jump
-    diffusion in bounded and infinite media*, Mol. Phys. **42**, 673 (1981),
-    [doi:10.1080/00268978100100521](https://doi.org/10.1080/00268978100100521).
+    1. P. L. Hall and D. K. Ross, *Incoherent neutron scattering functions for random jump
+       diffusion in bounded and infinite media*, Mol. Phys. **42**, 673 (1981),
+       [doi:10.1080/00268978100100521](https://doi.org/10.1080/00268978100100521).
+    2. Mantid, ``HallRoss`` fit function, whose ``L`` parameter is this $l$,
+       https://github.com/mantidproject/mantid/blob/17c1cd96c1d46b39bee21dc75a60017b658d689c/Framework/PythonInterface/plugins/functions/HallRoss.py#L30-L39.
 
     Examples
     --------

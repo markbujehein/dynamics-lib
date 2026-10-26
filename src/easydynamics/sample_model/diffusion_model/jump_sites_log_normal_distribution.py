@@ -51,8 +51,7 @@ class JumpSitesLogNormalDistribution(DeltaLorentzianDiffusionModelBase):
 
     $A_0$ is the EISF and $g_s A_l$ the QISF of order $j$, where the Lorentzian of order
     $j = (l - 1) \cdot 21 + s + 1$, from 1 to $21 (N - 1)$, has circle order $l$ and sample $s$.
-    The sampling (21 widths, cut where the weight falls to 0.1 of its maximum) is that of
-    QENSmodels.
+    The 21 widths are cut where the weight falls to 0.1 of its maximum.
 
     The radius is fixed by default, since it is normally known from the molecular geometry.
 

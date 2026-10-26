@@ -34,9 +34,9 @@ class EquivalentSitesCircle(DeltaLorentzianDiffusionModelBase):
     where $R$ is the radius of the circle, $\tau$ the residence time on a site, $j_0(x) = \sin(x)
     / x$, and $L(E, \Gamma)$ a Lorentzian with half width at half maximum $\Gamma$. $A_0$ is the
     EISF and $A_l$ ($l \geq 1$) the QISF of order $l$; they sum to one. For $N = 2$ this is the
-    two-site jump model, with jump distance $2R$ and $\Gamma_1 = 2\hbar/\tau$. Mantid's
-    ``DiffRotDiscreteCircle`` writes $4 \sin^2(\pi l / N) / \tau$, so its $\tau$ is twice the
-    residence time used here.
+    two-site jump model, with jump distance $2R$ and $\Gamma_1 = 2\hbar/\tau$. The width is
+    also written as $4 \sin^2(\pi l / N) / \tau$, with a $\tau$ that is twice the residence time
+    used here (reference 3).
 
     The radius is fixed by default, since it is normally known from the molecular geometry.
 
@@ -44,6 +44,8 @@ class EquivalentSitesCircle(DeltaLorentzianDiffusionModelBase):
     ----------
     1. J. D. Barnes, J. Chem. Phys. 58, 5193 (1973), doi:10.1063/1.1679130.
     2. M. Bée, Quasielastic Neutron Scattering, Adam Hilger, Bristol (1988).
+    3. Mantid, ``InelasticDiffRotDiscreteCircle``, whose ``Decay`` parameter is this $2\tau$,
+       https://github.com/mantidproject/mantid/blob/6ec66a6f524a7ec9d4258351fe3001c66c63dbe5/Framework/CurveFitting/src/Functions/InelasticDiffRotDiscreteCircle.cpp#L79-L108.
 
     Examples
     --------
