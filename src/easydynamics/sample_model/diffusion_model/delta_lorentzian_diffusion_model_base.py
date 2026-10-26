@@ -25,27 +25,26 @@ class DeltaLorentzianDiffusionModelBase(DiffusionModelBase, metaclass=ABCMeta):
 
     The model is
 
-    $$ S(Q, E) = K \left[ A_0(Q)\,\delta(E) + \sum_{j=1}^{n} A_j(Q)\, L(E, \Gamma_j(Q))
-    \right] $$
+    $$ S(Q, E) = K \left[ A_0(Q)\,\delta(E) + \sum_{j=1}^{n} A_j(Q)\, L(E, \Gamma_j(Q)) \right] $$
 
     where $K$ is the scale factor, $A_0(Q)$ is the Elastic Incoherent Structure Factor (EISF),
-    $A_j(Q)$ is the Quasi-Elastic Incoherent Structure Factor (QISF) of order $j$, and
-    $L(E, \Gamma)$ is a Lorentzian with half width at half maximum $\Gamma$. The total QISF is
-    $\sum_{j=1}^{n} A_j(Q)$, and EISF + QISF = 1 unless the model truncates an infinite sum.
-    $Q$ is assumed to have units of 1/angstrom. Creates ComponentCollections with one delta
-    function and n Lorentzian components for given Q-values. Their areas and widths are
-    dependent Parameters, so they follow the model parameters during a fit.
+    $A_j(Q)$ is the Quasi-Elastic Incoherent Structure Factor (QISF) of order $j$, and $L(E,
+    \Gamma)$ is a Lorentzian with half width at half maximum $\Gamma$. The total QISF is
+    $\sum_{j=1}^{n} A_j(Q)$, and EISF + QISF = 1 unless the model truncates an infinite sum. $Q$ is
+    assumed to have units of 1/angstrom. Creates ComponentCollections with one delta function and n
+    Lorentzian components for given Q-values. Their areas and widths are dependent Parameters, so
+    they follow the model parameters during a fit.
 
-    The base class holds no physics. A subclass supplies $\Gamma_j$ through
-    ``calculate_width``, $A_0$ through ``calculate_EISF``, $A_j$ through
-    ``calculate_QISF_order``, the dependent Parameter of $A_j$ through ``_create_weight`` (order
-    0 is the EISF), and the dependent width through ``_write_width_dependency_expression`` and
-    ``_write_width_dependency_map_expression``. It calls ``self.create_component_collections()``
-    at the end of its ``__init__``, after its parameters exist.
+    The base class holds no physics. A subclass supplies $\Gamma_j$ through ``calculate_width``,
+    $A_0$ through ``calculate_EISF``, $A_j$ through ``calculate_QISF_order``, the dependent
+    Parameter of $A_j$ through ``_create_weight`` (order 0 is the EISF), and the dependent width
+    through ``_write_width_dependency_expression`` and ``_write_width_dependency_map_expression``.
+    It calls ``self.create_component_collections()`` at the end of its ``__init__``, after its
+    parameters exist.
 
-    The Lorentzian of order $j$ is named ``'<lorentzian_name>_<symbol><j>'``, where the symbol
-    is the class attribute ``_order_symbol``, the conventional symbol of the subclass's order
-    (``'l'`` by default). ``get_fit_targets`` provides ``'elastic_area'`` and, for every order,
+    The Lorentzian of order $j$ is named ``'<lorentzian_name>_<symbol><j>'``, where the symbol is
+    the class attribute ``_order_symbol``, the conventional symbol of the subclass's order (``'l'``
+    by default). ``get_fit_targets`` provides ``'elastic_area'`` and, for every order,
     ``'area_<j>'`` and ``'width_<j>'``.
 
     See Also
@@ -58,8 +57,8 @@ class DeltaLorentzianDiffusionModelBase(DiffusionModelBase, metaclass=ABCMeta):
     --------
     **Using a model built on this base class**
 
-    The base class is abstract. A subclass, here EquivalentSitesCircle with N = 3 sites, has
-    N - 1 = 2 Lorentzians per Q-value:
+    The base class is abstract. A subclass, here EquivalentSitesCircle with N = 3 sites, has N - 1
+    = 2 Lorentzians per Q-value:
     ```python
     import numpy as np
     import easydynamics as edyn
@@ -132,8 +131,8 @@ class DeltaLorentzianDiffusionModelBase(DiffusionModelBase, metaclass=ABCMeta):
         Raises
         ------
         TypeError
-            If number_of_lorentzians is not an integer, or if delta_name or delta_display_name
-            is not a string (or None).
+            If number_of_lorentzians is not an integer, or if delta_name or delta_display_name is
+            not a string (or None).
         ValueError
             If number_of_lorentzians is smaller than 1.
         """
@@ -446,11 +445,10 @@ class DeltaLorentzianDiffusionModelBase(DiffusionModelBase, metaclass=ABCMeta):
         """
         Get the fittable predictions of the model as FitTargets.
 
-        The model predicts ``'elastic_area'`` (``scale * EISF``) and, for every order from 1 to
-        n, ``'area_<order>'`` (``scale`` times the QISF of that order) and ``'width_<order>'``
-        (its HWHM). The base class implementation of DiffusionModelBase is replaced because
-        there is no single Lorentzian. Select the orders to fit with the ``targets`` of a
-        FitBinding.
+        The model predicts ``'elastic_area'`` (``scale * EISF``) and, for every order from 1 to n,
+        ``'area_<order>'`` (``scale`` times the QISF of that order) and ``'width_<order>'`` (its
+        HWHM). The base class implementation of DiffusionModelBase is replaced because there is no
+        single Lorentzian. Select the orders to fit with the ``targets`` of a FitBinding.
 
         Returns
         -------

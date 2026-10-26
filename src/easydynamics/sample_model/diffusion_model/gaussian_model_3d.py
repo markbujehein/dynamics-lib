@@ -28,30 +28,30 @@ class GaussianModel3D(DeltaLorentzianDiffusionModelBase):
     r"""
     Model of diffusion inside an isotropic three-dimensional harmonic well.
 
-    A particle diffuses with diffusion coefficient $D$ in a harmonic potential that is the same
-    in all three directions, so its position about the centre of the well has a Gaussian
-    distribution. $\langle u^2 \rangle$ is the mean square distance from the centre, summed over
-    the three directions; along any one direction it is $\langle u^2 \rangle / 3$. Because the
-    well is isotropic, the scattering depends only on the magnitude of $Q$:
+    A particle diffuses with diffusion coefficient $D$ in a harmonic potential that is the same in
+    all three directions, so its position about the centre of the well has a Gaussian distribution.
+    $\langle u^2 \rangle$ is the mean square distance from the centre, summed over the three
+    directions; along any one direction it is $\langle u^2 \rangle / 3$. Because the well is
+    isotropic, the scattering depends only on the magnitude of $Q$:
 
     $$ S(Q, E) = A_0(Q)\,\delta(E) + \sum_{i=1}^{n} A_i(Q)\, L(E, \Gamma_i) $$
 
     with
 
-    $$ A_i(Q) = e^{-y} \frac{y^i}{i!}, \quad y = \frac{Q^2 \langle u^2 \rangle}{3},
-    \quad \Gamma_i = \frac{3 i \hbar D}{\langle u^2 \rangle} $$
+    $$ A_i(Q) = e^{-y} \frac{y^i}{i!}, \quad y = \frac{Q^2 \langle u^2 \rangle}{3}, \quad \Gamma_i
+    = \frac{3 i \hbar D}{\langle u^2 \rangle} $$
 
     where $L(E, \Gamma)$ is a Lorentzian with half width at half maximum $\Gamma$. $A_0 = e^{-y}$
     is the EISF, the same Debye-Waller factor as in ``DeltaLorentz``, and $A_i$ is the QISF of
-    order $i$. The widths $\Gamma_i$ grow linearly with $i$ and do not depend on $Q$; only the
-    QISF do. The paper writes the model with the variance along one direction,
-    $\langle u_x^2 \rangle = \langle u^2 \rangle / 3$.
+    order $i$. The widths $\Gamma_i$ grow linearly with $i$ and do not depend on $Q$; only the QISF
+    do. The paper writes the model with the variance along one direction, $\langle u_x^2 \rangle =
+    \langle u^2 \rangle / 3$.
 
-    The QISF form a Poisson distribution in $i$ with mean $y$, and together with the EISF they
-    sum to one. The infinite sum is therefore truncated at $n$ = ``number_of_lorentzians``, which
-    must be well above $y$ at the largest $Q$. A warning is raised if the truncation leaves out
-    more than 1e-3 of the total weight at any of the model's Q values, and
-    ``calculate_missing_weight`` returns the weight left out.
+    The QISF form a Poisson distribution in $i$ with mean $y$, and together with the EISF they sum
+    to one. The infinite sum is therefore truncated at $n$ = ``number_of_lorentzians``, which must
+    be well above $y$ at the largest $Q$. A warning is raised if the truncation leaves out more
+    than 1e-3 of the total weight at any of the model's Q values, and ``calculate_missing_weight``
+    returns the weight left out.
 
     References
     ----------
@@ -138,8 +138,8 @@ class GaussianModel3D(DeltaLorentzianDiffusionModelBase):
         Raises
         ------
         TypeError
-            If diffusion_coefficient or mean_u_squared is not a number, if number_of_lorentzians
-            is not an integer or if delta_name or delta_display_name is not a string (or None).
+            If diffusion_coefficient or mean_u_squared is not a number, if number_of_lorentzians is
+            not an integer or if delta_name or delta_display_name is not a string (or None).
         ValueError
             If diffusion_coefficient or mean_u_squared is smaller than its minimum, or if
             number_of_lorentzians is not between 1 and MAXIMUM_NUMBER_OF_LORENTZIANS.
@@ -310,8 +310,8 @@ class GaussianModel3D(DeltaLorentzianDiffusionModelBase):
 
     def calculate_QISF_order(self, Q: Q_type | None = None, order: int = 1) -> np.ndarray:
         """
-        Calculate the Quasi-Elastic Incoherent Structure Factor (QISF) of one order,
-        $A_i(Q) = e^{-y} y^i / i!$, the weight of the Lorentzian of order $i$.
+        Calculate the Quasi-Elastic Incoherent Structure Factor (QISF) of one order, $A_i(Q) =
+        e^{-y} y^i / i!$, the weight of the Lorentzian of order $i$.
 
         Parameters
         ----------
@@ -351,8 +351,8 @@ class GaussianModel3D(DeltaLorentzianDiffusionModelBase):
         """
         Calculate the spectral weight lost by truncating the sum at number_of_lorentzians.
 
-        The weights of all orders sum to one, so this is 1 - EISF - QISF. If it is not small at
-        the Q values of interest, increase number_of_lorentzians.
+        The weights of all orders sum to one, so this is 1 - EISF - QISF. If it is not small at the
+        Q values of interest, increase number_of_lorentzians.
 
         Parameters
         ----------
@@ -372,10 +372,10 @@ class GaussianModel3D(DeltaLorentzianDiffusionModelBase):
         Create ComponentCollections for the model at the current Q values.
 
         Each collection holds a delta function with area $\mathrm{scale}\, A_0(Q)$ and
-        number_of_lorentzians Lorentzians with widths $\Gamma_i$ and areas
-        $\mathrm{scale}\, A_i(Q)$ (built by the base class). The sum over i is truncated, so a
-        warning is raised if it omits more than MISSING_WEIGHT_TOLERANCE of the weight. The created
-        collections are installed on the model, so the returned list is the live one.
+        number_of_lorentzians Lorentzians with widths $\Gamma_i$ and areas $\mathrm{scale}\,
+        A_i(Q)$ (built by the base class). The sum over i is truncated, so a warning is raised if
+        it omits more than MISSING_WEIGHT_TOLERANCE of the weight. The created collections are
+        installed on the model, so the returned list is the live one.
 
         Returns
         -------
@@ -426,8 +426,8 @@ class GaussianModel3D(DeltaLorentzianDiffusionModelBase):
         Calculate the QISF $A_i = e^{-y} y^i / i!$ of the orders $i = 1 \ldots n$ with Scipp.
 
         Computed in log space, $\exp(-y + i \ln y - \ln i!)$, so that neither $y^i$ nor $i!$
-        overflows. Scipp has no factorial, so $\ln i!$ is the cumulative sum of $\ln k$. At
-        $Q = 0$ the logarithm is $-\infty$ and the weights are exactly 0.
+        overflows. Scipp has no factorial, so $\ln i!$ is the cumulative sum of $\ln k$. At $Q = 0$
+        the logarithm is $-\infty$ and the weights are exactly 0.
 
         Parameters
         ----------
@@ -530,8 +530,8 @@ class GaussianModel3D(DeltaLorentzianDiffusionModelBase):
         """
         Warn if truncating the sum at number_of_lorentzians omits too much weight.
 
-        The warning is raised if the missing weight exceeds MISSING_WEIGHT_TOLERANCE at any of
-        the model's Q values. Without Q values there is nothing to check.
+        The warning is raised if the missing weight exceeds MISSING_WEIGHT_TOLERANCE at any of the
+        model's Q values. Without Q values there is nothing to check.
         """
         if self.Q is None:
             return

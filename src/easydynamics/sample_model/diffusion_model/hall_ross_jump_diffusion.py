@@ -27,10 +27,10 @@ class HallRossJumpDiffusion(DiffusionModelBase):
     $$ \Gamma(Q) = \frac{\hbar}{\tau} \left( 1 - \exp\left(-\frac{Q^2 l^2}{2}\right) \right) $$
 
     where $\tau$ is the residence time and $l$ is the standard deviation of the jump-length
-    distribution, the convention of reference 2. The mean-square jump length is
-    $\langle r^2 \rangle = 3 l^2$. At small $Q$ the width tends to $\hbar D Q^2$ with
-    $D = l^2 / (2 \tau)$, and at large $Q$ to $\hbar / \tau$. $Q$ is assumed to have units of
-    1/angstrom. Creates ComponentCollections with Lorentzian components for given Q-values.
+    distribution, the convention of reference 2. The mean-square jump length is $\langle r^2
+    \rangle = 3 l^2$. At small $Q$ the width tends to $\hbar D Q^2$ with $D = l^2 / (2 \tau)$, and
+    at large $Q$ to $\hbar / \tau$. $Q$ is assumed to have units of 1/angstrom. Creates
+    ComponentCollections with Lorentzian components for given Q-values.
 
     References
     ----------

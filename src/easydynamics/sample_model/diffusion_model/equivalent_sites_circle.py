@@ -27,16 +27,16 @@ class EquivalentSitesCircle(DeltaLorentzianDiffusionModelBase):
 
     with
 
-    $$ A_l(Q) = \frac{1}{N} \sum_{k=1}^{N} j_0(Q r_k) \cos\left(\frac{2\pi l k}{N}\right),
-    \quad r_k = 2R \sin\left(\frac{\pi k}{N}\right),
-    \quad \Gamma_l = \frac{2\hbar}{\tau} \sin^2\left(\frac{\pi l}{N}\right) $$
+    $$ A_l(Q) = \frac{1}{N} \sum_{k=1}^{N} j_0(Q r_k) \cos\left(\frac{2\pi l k}{N}\right), \quad
+    r_k = 2R \sin\left(\frac{\pi k}{N}\right), \quad \Gamma_l = \frac{2\hbar}{\tau}
+    \sin^2\left(\frac{\pi l}{N}\right) $$
 
-    where $R$ is the radius of the circle, $\tau$ the residence time on a site, $j_0(x) = \sin(x)
-    / x$, and $L(E, \Gamma)$ a Lorentzian with half width at half maximum $\Gamma$. $A_0$ is the
-    EISF and $A_l$ ($l \geq 1$) the QISF of order $l$; they sum to one. For $N = 2$ this is the
-    two-site jump model, with jump distance $2R$ and $\Gamma_1 = 2\hbar/\tau$. The width is
-    also written as $4 \sin^2(\pi l / N) / \tau$, with a $\tau$ that is twice the residence time
-    used here (reference 3).
+    where $R$ is the radius of the circle, $\tau$ the residence time on a site, $j_0(x) = \sin(x) /
+    x$, and $L(E, \Gamma)$ a Lorentzian with half width at half maximum $\Gamma$. $A_0$ is the EISF
+    and $A_l$ ($l \geq 1$) the QISF of order $l$; they sum to one. For $N = 2$ this is the two-site
+    jump model, with jump distance $2R$ and $\Gamma_1 = 2\hbar/\tau$. The width is also written as
+    $4 \sin^2(\pi l / N) / \tau$, with a $\tau$ that is twice the residence time used here
+    (reference 3).
 
     The radius is fixed by default, since it is normally known from the molecular geometry.
 
@@ -99,8 +99,8 @@ class EquivalentSitesCircle(DeltaLorentzianDiffusionModelBase):
         residence_time : Numeric, default=1.0
             Residence time tau on a site in ps.
         number_of_sites : int, default=3
-            Number of equivalent sites N on the circle, between 2 and MAXIMUM_NUMBER_OF_SITES.
-            Set at construction; not a fit parameter.
+            Number of equivalent sites N on the circle, between 2 and MAXIMUM_NUMBER_OF_SITES. Set
+            at construction; not a fit parameter.
         Q : Q_type | None, default=None
             Q values for the model. If None, Q is not set.
         x_unit : str | sc.Unit, default='meV'
@@ -127,8 +127,8 @@ class EquivalentSitesCircle(DeltaLorentzianDiffusionModelBase):
         Raises
         ------
         TypeError
-            If radius or residence_time is not a number, if number_of_sites is not an integer or
-            if delta_name or delta_display_name is not a string (or None).
+            If radius or residence_time is not a number, if number_of_sites is not an integer or if
+            delta_name or delta_display_name is not a string (or None).
         ValueError
             If radius or residence_time is smaller than its minimum, or if number_of_sites is not
             between 2 and MAXIMUM_NUMBER_OF_SITES.
@@ -362,8 +362,8 @@ class EquivalentSitesCircle(DeltaLorentzianDiffusionModelBase):
         r"""
         Calculate the EISF and the QISF, $A_l(Q)$ for all orders $l = 0 \ldots N - 1$, with Scipp.
 
-        $A_l(Q) = \frac{1}{N} \sum_{k=1}^{N} j_0(Q r_k) \cos(2\pi l k / N)$ with
-        $r_k = 2R\sin(\pi k / N)$. The variance of the radius is not propagated.
+        $A_l(Q) = \frac{1}{N} \sum_{k=1}^{N} j_0(Q r_k) \cos(2\pi l k / N)$ with $r_k = 2R\sin(\pi
+        k / N)$. The variance of the radius is not propagated.
 
         Parameters
         ----------

@@ -32,26 +32,26 @@ _EDGE = float(np.sqrt(-2.0 * np.log(LOWER_LIMIT)))
 
 class JumpSitesLogNormalDistribution(DeltaLorentzianDiffusionModelBase):
     r"""
-    Model of jumps between N equivalent sites on a circle with a log-normal distribution of
-    jump rates (Chahid, Alegría and Colmenero).
+    Model of jumps between N equivalent sites on a circle with a log-normal distribution of jump
+    rates (Chahid, Alegría and Colmenero).
 
-    $$ S(Q, E) = A_0(Q)\,\delta(E) + \sum_{l=1}^{N-1} A_l(Q) \sum_{s=0}^{20} g_s\,
-    L(E, \Gamma_l r_s) $$
+    $$ S(Q, E) = A_0(Q)\,\delta(E) + \sum_{l=1}^{N-1} A_l(Q) \sum_{s=0}^{20} g_s\, L(E, \Gamma_l
+    r_s) $$
 
     with the weights and widths of the equivalent-sites circle model,
 
-    $$ A_l(Q) = \frac{1}{N} \sum_{k=1}^{N} j_0(Q r_k) \cos\left(\frac{2\pi l k}{N}\right),
-    \quad r_k = 2R \sin\left(\frac{\pi k}{N}\right),
-    \quad \Gamma_l = \frac{2\hbar}{\tau} \sin^2\left(\frac{\pi l}{N}\right), $$
+    $$ A_l(Q) = \frac{1}{N} \sum_{k=1}^{N} j_0(Q r_k) \cos\left(\frac{2\pi l k}{N}\right), \quad
+    r_k = 2R \sin\left(\frac{\pi k}{N}\right), \quad \Gamma_l = \frac{2\hbar}{\tau}
+    \sin^2\left(\frac{\pi l}{N}\right), $$
 
-    spread over 21 log-spaced widths $\Gamma_l r_s$ with $\ln r_s = \sigma c (s/10 - 1)$,
-    $c = \sqrt{-2 \ln 0.1}$, and weights $g_s \propto \exp(-\ln^2 r_s / (2\sigma^2))$ normalised
-    to $\sum_s g_s = 1$. Because the grid scales with $\sigma$, the $g_s$ do not depend on
-    $\sigma$; only the widths do. For $\sigma \to 0$ this is the equivalent-sites circle model.
+    spread over 21 log-spaced widths $\Gamma_l r_s$ with $\ln r_s = \sigma c (s/10 - 1)$, $c =
+    \sqrt{-2 \ln 0.1}$, and weights $g_s \propto \exp(-\ln^2 r_s / (2\sigma^2))$ normalised to
+    $\sum_s g_s = 1$. Because the grid scales with $\sigma$, the $g_s$ do not depend on $\sigma$;
+    only the widths do. For $\sigma \to 0$ this is the equivalent-sites circle model.
 
-    $A_0$ is the EISF and $g_s A_l$ the QISF of order $j$, where the Lorentzian of order
-    $j = (l - 1) \cdot 21 + s + 1$, from 1 to $21 (N - 1)$, has circle order $l$ and sample $s$.
-    The 21 widths are cut where the weight falls to 0.1 of its maximum.
+    $A_0$ is the EISF and $g_s A_l$ the QISF of order $j$, where the Lorentzian of order $j = (l -
+    1) \cdot 21 + s + 1$, from 1 to $21 (N - 1)$, has circle order $l$ and sample $s$. The 21
+    widths are cut where the weight falls to 0.1 of its maximum.
 
     The radius is fixed by default, since it is normally known from the molecular geometry.
 
@@ -113,11 +113,11 @@ class JumpSitesLogNormalDistribution(DeltaLorentzianDiffusionModelBase):
         residence_time : Numeric, default=1.0
             Residence time tau on a site in ps, the centre of the distribution.
         sigma : Numeric, default=1.0
-            Standard deviation of the log-normal distribution of jump rates (dimensionless).
-            Must be at least MINIMUM_SIGMA.
+            Standard deviation of the log-normal distribution of jump rates (dimensionless). Must
+            be at least MINIMUM_SIGMA.
         number_of_sites : int, default=3
-            Number of equivalent sites N on the circle, between 2 and MAXIMUM_NUMBER_OF_SITES.
-            Set at construction; not a fit parameter.
+            Number of equivalent sites N on the circle, between 2 and MAXIMUM_NUMBER_OF_SITES. Set
+            at construction; not a fit parameter.
         Q : Q_type | None, default=None
             Q values for the model. If None, Q is not set.
         x_unit : str | sc.Unit, default='meV'
@@ -147,8 +147,8 @@ class JumpSitesLogNormalDistribution(DeltaLorentzianDiffusionModelBase):
             If radius, residence_time or sigma is not a number, if number_of_sites is not an
             integer or if delta_name or delta_display_name is not a string (or None).
         ValueError
-            If radius, residence_time or sigma is smaller than its minimum, or if
-            number_of_sites is not between 2 and MAXIMUM_NUMBER_OF_SITES.
+            If radius, residence_time or sigma is smaller than its minimum, or if number_of_sites
+            is not between 2 and MAXIMUM_NUMBER_OF_SITES.
         """
         self._verify_radius(radius)
         self._verify_residence_time(residence_time)
@@ -314,9 +314,8 @@ class JumpSitesLogNormalDistribution(DeltaLorentzianDiffusionModelBase):
         r"""
         Get the weights $g_s$ of the 21 sampled widths, which sum to one.
 
-        $g_s \propto \exp(-c^2 (s/10 - 1)^2 / 2)$: the log-normal weight
-        $\exp(-\ln^2 r_s / (2\sigma^2))$ with $\ln r_s = \sigma c (s/10 - 1)$, so it does not
-        depend on $\sigma$.
+        $g_s \propto \exp(-c^2 (s/10 - 1)^2 / 2)$: the log-normal weight $\exp(-\ln^2 r_s /
+        (2\sigma^2))$ with $\ln r_s = \sigma c (s/10 - 1)$, so it does not depend on $\sigma$.
 
         Returns
         -------
@@ -449,12 +448,11 @@ class JumpSitesLogNormalDistribution(DeltaLorentzianDiffusionModelBase):
 
     def _circle_structure_factors(self, Q: np.ndarray) -> sc.Variable:
         r"""
-        Calculate the circle model's EISF and QISF, $A_l(Q)$ for all circle orders
-        $l = 0 \ldots N - 1$, with Scipp.
+        Calculate the circle model's EISF and QISF, $A_l(Q)$ for all circle orders $l = 0 \ldots N
+        - 1$, with Scipp.
 
-        $A_l(Q) = \frac{1}{N} \sum_{k=1}^{N} j_0(Q r_k) \cos(2\pi l k / N)$ with
-        $r_k = 2R\sin(\pi k / N)$, as in EquivalentSitesCircle. The variance of the radius is not
-        propagated.
+        $A_l(Q) = \frac{1}{N} \sum_{k=1}^{N} j_0(Q r_k) \cos(2\pi l k / N)$ with $r_k = 2R\sin(\pi
+        k / N)$, as in EquivalentSitesCircle. The variance of the radius is not propagated.
 
         Parameters
         ----------
@@ -486,8 +484,8 @@ class JumpSitesLogNormalDistribution(DeltaLorentzianDiffusionModelBase):
         Create the EISF ($j = 0$) or the QISF of order $j$, $g_s A_l(Q)$, as a dimensionless
         dependent Parameter that follows the radius.
 
-        The dependency expressions cannot call Scipp, so the circle's sum over sites is written
-        out with NumPy's sinc, sinc(x) = sin(pi x) / (pi x), and multiplied by the constant g_s.
+        The dependency expressions cannot call Scipp, so the circle's sum over sites is written out
+        with NumPy's sinc, sinc(x) = sin(pi x) / (pi x), and multiplied by the constant g_s.
         Keeping the weight separate from the scale makes updates of the scale cheap.
 
         Parameters
