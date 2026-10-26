@@ -35,9 +35,9 @@ class IsotropicRotationalDiffusion(DeltaLorentzianDiffusionModelBase):
     Model of isotropic rotational diffusion of a scatterer on the surface of a sphere.
 
     The scatterer stays at a fixed distance $R$ from a centre, for example a hydrogen atom in a
-    molecule that tumbles freely, and moves over the surface of that sphere by rotational
-    diffusion with rotational diffusion coefficient $D_R$. The motion is isotropic, so the
-    scattering depends only on the magnitude of $Q$:
+    molecule that tumbles freely, and moves over the surface of that sphere by rotational diffusion
+    with rotational diffusion coefficient $D_R$. The motion is isotropic, so the scattering depends
+    only on the magnitude of $Q$:
 
     $$ S(Q, E) = A_0(Q)\,\delta(E) + \sum_{l=1}^{l_{max}} A_l(Q)\, L(E, \Gamma_l) $$
 
@@ -46,14 +46,14 @@ class IsotropicRotationalDiffusion(DeltaLorentzianDiffusionModelBase):
     $$ A_0(Q) = j_0^2(QR),\quad A_l(Q) = (2l+1)\, j_l^2(QR),\quad \Gamma_l = l(l+1)\hbar D_R $$
 
     where $j_l$ are the spherical Bessel functions and $L(E, \Gamma)$ a Lorentzian with half width
-    at half maximum $\Gamma$. $A_0$ is the EISF and $A_l$ the QISF of order $l$. The widths do
-    not depend on $Q$; only the QISF do.
+    at half maximum $\Gamma$. $A_0$ is the EISF and $A_l$ the QISF of order $l$. The widths do not
+    depend on $Q$; only the QISF do.
 
-    The EISF and the QISF of all orders sum to one, so cutting the infinite sum at
-    $l_{max}$ = ``l_max`` leaves out some of the weight. A warning is raised if more than 1e-3 of
-    the weight is left out at any of the model's Q values, and ``calculate_missing_weight``
-    returns the weight left out. With the default ``l_max`` of 6 this happens from QR of about
-    4.3, and with the largest, 20, from QR of about 17.
+    The EISF and the QISF of all orders sum to one, so cutting the infinite sum at $l_{max}$ =
+    ``l_max`` leaves out some of the weight. A warning is raised if more than 1e-3 of the weight is
+    left out at any of the model's Q values, and ``calculate_missing_weight`` returns the weight
+    left out. With the default ``l_max`` of 6 this happens from QR of about 4.3, and with the
+    largest, 20, from QR of about 17.
 
     The radius is fixed by default, since it is normally known from the molecular geometry.
 
@@ -114,8 +114,8 @@ class IsotropicRotationalDiffusion(DeltaLorentzianDiffusionModelBase):
         rotational_diffusion_coefficient : Numeric, default=1.0
             Rotational diffusion coefficient D_R in 1/ps. Must be positive.
         l_max : int, default=DEFAULT_L_MAX
-            Order at which the sum is cut: the model has l_max Lorentzians per Q-value, of orders
-            1 to l_max. Between 1 and MAXIMUM_L_MAX. Set at construction.
+            Order at which the sum is cut: the model has l_max Lorentzians per Q-value, of orders 1
+            to l_max. Between 1 and MAXIMUM_L_MAX. Set at construction.
         Q : Q_type | None, default=None
             Q values for the model. If None, Q is not set.
         x_unit : str | sc.Unit, default='meV'
