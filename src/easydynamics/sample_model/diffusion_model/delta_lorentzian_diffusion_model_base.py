@@ -20,18 +20,60 @@ from easydynamics.utils.utils import Q_type
 
 
 class DeltaLorentzianDiffusionModelBase(DiffusionModelBase, metaclass=ABCMeta):
-    """
-    Base class for diffusion models made of one delta function and n Lorentzians per Q.
+    r"""
+    Base class for diffusion models made of one delta function and n Lorentzians per Q-value.
 
-    The base class builds the components and the fit targets; it holds no physics. A subclass
-    supplies the widths and weights through ``calculate_width``, ``calculate_EISF``,
-    ``calculate_QISF_order``, ``_create_weight`` and the two width dependency methods, and calls
-    ``self.create_component_collections()`` at the end of its ``__init__``, after its parameters
-    exist.
+    The model is
 
-    The Lorentzian of order ``order`` is named ``'<lorentzian_name>_<symbol><order>'``, where the
-    symbol is the class attribute ``_order_symbol`` (the conventional symbol of the model's
-    order).
+    $$ S(Q, E) = K \left[ A_0(Q)\,\delta(E) + \sum_{j=1}^{n} A_j(Q)\, L(E, \Gamma_j(Q))
+    \right] $$
+
+    where $K$ is the scale factor, $A_0(Q)$ is the Elastic Incoherent Structure Factor (EISF),
+    $A_j(Q)$ is the Quasi-Elastic Incoherent Structure Factor (QISF) of order $j$, and
+    $L(E, \Gamma)$ is a Lorentzian with half width at half maximum $\Gamma$. The total QISF is
+    $\sum_{j=1}^{n} A_j(Q)$, and EISF + QISF = 1 unless the model truncates an infinite sum.
+    $Q$ is assumed to have units of 1/angstrom. Creates ComponentCollections with one delta
+    function and n Lorentzian components for given Q-values. Their areas and widths are
+    dependent Parameters, so they follow the model parameters during a fit.
+
+    The base class holds no physics. A subclass supplies $\Gamma_j$ through
+    ``calculate_width``, $A_0$ through ``calculate_EISF``, $A_j$ through
+    ``calculate_QISF_order``, the dependent Parameter of $A_j$ through ``_create_weight`` (order
+    0 is the EISF), and the dependent width through ``_write_width_dependency_expression`` and
+    ``_write_width_dependency_map_expression``. It calls ``self.create_component_collections()``
+    at the end of its ``__init__``, after its parameters exist.
+
+    The Lorentzian of order $j$ is named ``'<lorentzian_name>_<symbol><j>'``, where the symbol
+    is the class attribute ``_order_symbol``, the conventional symbol of the subclass's order
+    (``'l'`` by default). ``get_fit_targets`` provides ``'elastic_area'`` and, for every order,
+    ``'area_<j>'`` and ``'width_<j>'``.
+
+    See Also
+    --------
+    EquivalentSitesCircle : Jumps between N equivalent sites on a circle.
+    JumpSitesLogNormalDistribution : The same with a log-normal distribution of jump rates.
+    GaussianModel3D : Diffusion in a three-dimensional harmonic confinement.
+
+    Examples
+    --------
+    **Using a model built on this base class**
+
+    The base class is abstract. A subclass, here EquivalentSitesCircle with N = 3 sites, has
+    N - 1 = 2 Lorentzians per Q-value:
+    ```python
+    import numpy as np
+    import easydynamics as edyn
+
+    model = edyn.EquivalentSitesCircle(
+        radius=1.0,
+        residence_time=2.0,
+        number_of_sites=3,
+        Q=np.linspace(0.5, 2, 7),
+    )
+    model.number_of_lorentzians  # 2
+    model.lorentzian_component_name(1)  # 'EquivalentSitesCircle_l1'
+    model.calculate_EISF() + model.calculate_QISF()  # ones
+    ```
     """
 
     _order_symbol: str = 'l'
@@ -208,15 +250,16 @@ class DeltaLorentzianDiffusionModelBase(DiffusionModelBase, metaclass=ABCMeta):
 
     @abstractmethod
     def calculate_width(self, Q: Q_type | None = None, order: int = 1) -> np.ndarray:
-        """
-        Calculate the HWHM of the Lorentzian of a given order.
+        r"""
+        Calculate the half-width at half-maximum (HWHM) $\Gamma_j(Q)$ of the Lorentzian of order
+        $j$.
 
         Parameters
         ----------
         Q : Q_type | None, default=None
             Scattering vector in 1/angstrom.
         order : int, default=1
-            The order of the Lorentzian, between 1 and n.
+            The order j of the Lorentzian, between 1 and n.
 
         Returns
         -------
@@ -227,7 +270,8 @@ class DeltaLorentzianDiffusionModelBase(DiffusionModelBase, metaclass=ABCMeta):
     @abstractmethod
     def calculate_EISF(self, Q: Q_type | None = None) -> np.ndarray:
         """
-        Calculate the Elastic Incoherent Structure Factor (EISF), the weight of the delta function.
+        Calculate the Elastic Incoherent Structure Factor (EISF), $A_0(Q)$, the weight of the delta
+        function.
 
         Parameters
         ----------
@@ -243,37 +287,38 @@ class DeltaLorentzianDiffusionModelBase(DiffusionModelBase, metaclass=ABCMeta):
     @abstractmethod
     def calculate_QISF_order(self, Q: Q_type | None = None, order: int = 1) -> np.ndarray:
         """
-        Calculate the weight of the Lorentzian of a given order.
+        Calculate the Quasi-Elastic Incoherent Structure Factor (QISF) of one order, $A_j(Q)$, the
+        weight of the Lorentzian of order $j$.
 
         Parameters
         ----------
         Q : Q_type | None, default=None
             Scattering vector in 1/angstrom.
         order : int, default=1
-            The order of the Lorentzian, between 1 and n.
+            The order j of the Lorentzian, between 1 and n.
 
         Returns
         -------
         np.ndarray
-            Weights (dimensionless).
+            QISF values of that order (dimensionless).
         """
 
     @abstractmethod
     def _create_weight(self, Q: float, order: int) -> Parameter:
         """
-        Create the dimensionless weight of a component as a Parameter.
+        Create the EISF (order 0) or the QISF of one order as a dimensionless dependent Parameter.
 
         Parameters
         ----------
         Q : float
             Scattering vector in 1/angstrom.
         order : int
-            The order of the Lorentzian; 0 for the delta function.
+            The order j of the Lorentzian; 0 for the delta function.
 
         Returns
         -------
         Parameter
-            The weight.
+            The EISF or QISF, which becomes the weight of the component.
         """
 
     @abstractmethod
@@ -328,10 +373,10 @@ class DeltaLorentzianDiffusionModelBase(DiffusionModelBase, metaclass=ABCMeta):
         r"""
         Create ComponentCollections for the model at the current Q values.
 
-        Each collection holds a delta function with area $\mathrm{scale}\, A_0(Q)$ and n
-        Lorentzians with the widths of ``calculate_width`` and areas
-        $\mathrm{scale}\, A_\mathrm{order}(Q)$. The created collections are installed on the
-        model, so the returned list is the live one.
+        Each collection holds a delta function with area $K A_0(Q)$ (scale times EISF) and n
+        Lorentzians with widths $\Gamma_j(Q)$ from ``calculate_width`` and areas $K A_j(Q)$ (scale
+        times the QISF of order $j$). The created collections are installed on the model, so the
+        returned list is the live one.
 
         Returns
         -------
@@ -402,7 +447,7 @@ class DeltaLorentzianDiffusionModelBase(DiffusionModelBase, metaclass=ABCMeta):
         Get the fittable predictions of the model as FitTargets.
 
         The model predicts ``'elastic_area'`` (``scale * EISF``) and, for every order from 1 to
-        n, ``'area_<order>'`` (``scale`` times the weight of that order) and ``'width_<order>'``
+        n, ``'area_<order>'`` (``scale`` times the QISF of that order) and ``'width_<order>'``
         (its HWHM). The base class implementation of DiffusionModelBase is replaced because
         there is no single Lorentzian. Select the orders to fit with the ``targets`` of a
         FitBinding.
@@ -461,7 +506,7 @@ class DeltaLorentzianDiffusionModelBase(DiffusionModelBase, metaclass=ABCMeta):
         Returns
         -------
         str
-            Dependency expression for the area, the scale times the weight.
+            Dependency expression for the area, the scale times the EISF or QISF.
         """
         return 'scale * weight'
 
@@ -474,7 +519,7 @@ class DeltaLorentzianDiffusionModelBase(DiffusionModelBase, metaclass=ABCMeta):
         Parameters
         ----------
         weight : Parameter
-            The dimensionless weight of the component.
+            The EISF or the QISF of one order, from ``_create_weight`` (dimensionless).
 
         Returns
         -------

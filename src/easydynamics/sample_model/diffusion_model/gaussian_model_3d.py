@@ -36,15 +36,20 @@ class GaussianModel3D(DeltaLorentzianDiffusionModelBase):
     \quad \Gamma_i = \frac{3 i \hbar D}{\langle u^2 \rangle} $$
 
     where $D$ is the diffusion coefficient, $\langle u^2 \rangle$ the mean square displacement
-    and $L(E, \Gamma)$ a Lorentzian with half width at half maximum $\Gamma$. The EISF
-    $A_0 = \exp(-\langle u^2 \rangle Q^2 / 3)$ is the same Debye-Waller factor as in
-    ``DeltaLorentz``. Volino's paper writes the model with the variance along one axis,
-    $\langle u_x^2 \rangle = \langle u^2 \rangle / 3$.
+    and $L(E, \Gamma)$ a Lorentzian with half width at half maximum $\Gamma$. $A_i$ is the
+    QISF of order $i$, and the EISF $A_0 = \exp(-\langle u^2 \rangle Q^2 / 3)$ is the same
+    Debye-Waller factor as in ``DeltaLorentz``. Volino's paper writes the model with the
+    variance along one axis, $\langle u_x^2 \rangle = \langle u^2 \rangle / 3$.
 
     The weights form a Poisson distribution in $i$, so the infinite sum is truncated at
     $n$ = ``number_of_lorentzians``. A warning is raised if the truncation omits more than 1e-3
     of the spectral weight at any of the Q values; $n$ must be well above $y$. The omitted
     weights are available from ``calculate_missing_weight``.
+
+    References
+    ----------
+    F. Volino, J.-C. Perrin and S. Lyonnard, J. Phys. Chem. B 110, 11217 (2006),
+    doi:10.1021/jp061103s.
 
     Examples
     --------
@@ -65,11 +70,6 @@ class GaussianModel3D(DeltaLorentzianDiffusionModelBase):
     )
     component_collections = model.create_component_collections()
     ```
-
-    References
-    ----------
-    F. Volino, J.-C. Perrin and S. Lyonnard, J. Phys. Chem. B 110, 11217 (2006),
-    doi:10.1021/jp061103s.
     """
 
     _order_symbol = 'i'  # components are named '<lorentzian_name>_i<i>'
@@ -303,7 +303,8 @@ class GaussianModel3D(DeltaLorentzianDiffusionModelBase):
 
     def calculate_QISF_order(self, Q: Q_type | None = None, order: int = 1) -> np.ndarray:
         """
-        Calculate the quasi-elastic weight A_i(Q) = exp(-y) y^i / i! of a given order.
+        Calculate the Quasi-Elastic Incoherent Structure Factor (QISF) of one order,
+        $A_i(Q) = e^{-y} y^i / i!$, the weight of the Lorentzian of order $i$.
 
         Parameters
         ----------
@@ -315,7 +316,7 @@ class GaussianModel3D(DeltaLorentzianDiffusionModelBase):
         Returns
         -------
         np.ndarray
-            Weights (dimensionless).
+            QISF values of that order (dimensionless).
         """
         self._verify_order(order)
         Q = self._ensure_Q(Q)
@@ -323,8 +324,8 @@ class GaussianModel3D(DeltaLorentzianDiffusionModelBase):
 
     def calculate_QISF(self, Q: Q_type | None = None) -> np.ndarray:
         """
-        Calculate the total Quasi-Elastic Incoherent Structure Factor (QISF), the sum of the
-        weights of all number_of_lorentzians Lorentzians.
+        Calculate the total Quasi-Elastic Incoherent Structure Factor (QISF), the sum of the QISF
+        of all number_of_lorentzians orders.
 
         Parameters
         ----------
@@ -415,7 +416,7 @@ class GaussianModel3D(DeltaLorentzianDiffusionModelBase):
 
     def _quasielastic_weights(self, Q: np.ndarray) -> sc.Variable:
         r"""
-        Calculate the weights $A_i = e^{-y} y^i / i!$ of the orders i = 1 ... n with Scipp.
+        Calculate the QISF $A_i = e^{-y} y^i / i!$ of the orders $i = 1 \ldots n$ with Scipp.
 
         Computed in log space, $\exp(-y + i \ln y - \ln i!)$, so that neither $y^i$ nor $i!$
         overflows. Scipp has no factorial, so $\ln i!$ is the cumulative sum of $\ln k$. At
@@ -429,7 +430,7 @@ class GaussianModel3D(DeltaLorentzianDiffusionModelBase):
         Returns
         -------
         sc.Variable
-            Dimensionless weights with dims ``('Q', 'order')``.
+            Dimensionless QISF with dims ``('Q', 'order')``.
         """
         order = sc.arange('order', 1.0, self.number_of_lorentzians + 1.0)
         log_factorial = sc.cumsum(sc.log(order), 'order')
@@ -438,8 +439,9 @@ class GaussianModel3D(DeltaLorentzianDiffusionModelBase):
         return weights.transpose(['Q', 'order'])
 
     def _create_weight(self, Q: float, order: int) -> Parameter:
-        """
-        Create the dimensionless weight A_i(Q) as a dependent Parameter that follows <u^2>.
+        r"""
+        Create the EISF ($i = 0$) or the QISF of order $i$, $A_i(Q)$, as a dimensionless dependent
+        Parameter that follows $\langle u^2 \rangle$.
 
         The dependency expressions cannot call Scipp, so the weight is written out in the same
         log-space form as ``_quasielastic_weights``. Keeping the weight separate from the scale
@@ -450,7 +452,7 @@ class GaussianModel3D(DeltaLorentzianDiffusionModelBase):
         Q : float
             Scattering vector in 1/angstrom.
         order : int
-            The order i; 0 for the delta function.
+            The order i; 0 for the delta function (the EISF).
 
         Raises
         ------

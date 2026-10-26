@@ -241,9 +241,10 @@ class HallRossJumpDiffusion(DiffusionModelBase):
 
     def calculate_width(self, Q: Q_type | None = None) -> np.ndarray:
         r"""
-        Calculate the half-width at half-maximum (HWHM) for the diffusion model. $\Gamma(Q) =
-        \hbar / \tau * (1 - \exp(-Q^2 l^2 / 2))$, where $\tau$ is the residence time and $l$ is
-        the jump length.
+        Calculate the half-width at half-maximum (HWHM) for the diffusion model.
+
+        $\Gamma(Q) = (\hbar / \tau) (1 - \exp(-Q^2 l^2 / 2))$, where $\tau$ is the residence time
+        and $l$ is the standard deviation of the jump-length distribution.
 
         Parameters
         ----------
@@ -271,7 +272,7 @@ class HallRossJumpDiffusion(DiffusionModelBase):
 
     def calculate_EISF(self, Q: Q_type) -> np.ndarray:
         """
-        Calculate the Elastic Incoherent Structure Factor (EISF).
+        Calculate the Elastic Incoherent Structure Factor (EISF), which is 0 for this model.
 
         Parameters
         ----------
@@ -289,7 +290,7 @@ class HallRossJumpDiffusion(DiffusionModelBase):
 
     def calculate_QISF(self, Q: Q_type) -> np.ndarray:
         """
-        Calculate the Quasi-Elastic Incoherent Structure Factor (QISF).
+        Calculate the Quasi-Elastic Incoherent Structure Factor (QISF), which is 1 for this model.
 
         Parameters
         ----------

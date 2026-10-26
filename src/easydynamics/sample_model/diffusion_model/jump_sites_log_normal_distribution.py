@@ -49,11 +49,19 @@ class JumpSitesLogNormalDistribution(DeltaLorentzianDiffusionModelBase):
     to $\sum_s g_s = 1$. Because the grid scales with $\sigma$, the $g_s$ do not depend on
     $\sigma$; only the widths do. For $\sigma \to 0$ this is the equivalent-sites circle model.
 
-    The Lorentzian of order $j = (l - 1) \cdot 21 + s + 1$, from 1 to $21 (N - 1)$, has circle
-    order $l$ and sample $s$. The sampling (21 widths, cut where the weight falls to 0.1 of its
-    maximum) is that of QENSmodels.
+    $A_0$ is the EISF and $g_s A_l$ the QISF of order $j$, where the Lorentzian of order
+    $j = (l - 1) \cdot 21 + s + 1$, from 1 to $21 (N - 1)$, has circle order $l$ and sample $s$.
+    The sampling (21 widths, cut where the weight falls to 0.1 of its maximum) is that of
+    QENSmodels.
 
     The radius is fixed by default, since it is normally known from the molecular geometry.
+
+    References
+    ----------
+    1. A. Chahid, A. Alegría and J. Colmenero, Macromolecules 27, 3282 (1994),
+       doi:10.1021/ma00090a022.
+    2. QENSmodels, jump_sites_log_norm_dist,
+       https://github.com/QENSlibrary/QENSmodels/blob/main/QENSmodels/jump_sites_log_norm_dist.py.
 
     Examples
     --------
@@ -72,13 +80,6 @@ class JumpSitesLogNormalDistribution(DeltaLorentzianDiffusionModelBase):
         Q=np.linspace(0.5, 2, 7),
     )
     ```
-
-    References
-    ----------
-    1. A. Chahid, A. Alegría and J. Colmenero, Macromolecules 27, 3282 (1994),
-       doi:10.1021/ma00090a022.
-    2. QENSmodels, jump_sites_log_norm_dist,
-       https://github.com/QENSlibrary/QENSmodels/blob/main/QENSmodels/jump_sites_log_norm_dist.py.
     """
 
     _order_symbol = 'j'  # components are named '<lorentzian_name>_j<j>'
@@ -358,7 +359,7 @@ class JumpSitesLogNormalDistribution(DeltaLorentzianDiffusionModelBase):
 
     def calculate_EISF(self, Q: Q_type | None = None) -> np.ndarray:
         """
-        Calculate the Elastic Incoherent Structure Factor (EISF), A_0(Q).
+        Calculate the Elastic Incoherent Structure Factor (EISF), $A_0(Q)$.
 
         Parameters
         ----------
@@ -375,7 +376,8 @@ class JumpSitesLogNormalDistribution(DeltaLorentzianDiffusionModelBase):
 
     def calculate_QISF_order(self, Q: Q_type | None = None, order: int = 1) -> np.ndarray:
         """
-        Calculate the quasi-elastic weight g_s A_l(Q) of the Lorentzian of a given order.
+        Calculate the Quasi-Elastic Incoherent Structure Factor (QISF) of one order, $g_s A_l(Q)$,
+        the weight of the Lorentzian of order $j$ (circle order $l$, sample $s$).
 
         Parameters
         ----------
@@ -387,7 +389,7 @@ class JumpSitesLogNormalDistribution(DeltaLorentzianDiffusionModelBase):
         Returns
         -------
         np.ndarray
-            Weights (dimensionless).
+            QISF values of that order (dimensionless).
         """
         self._verify_order(order)
         Q = self._ensure_Q(Q)
@@ -398,8 +400,8 @@ class JumpSitesLogNormalDistribution(DeltaLorentzianDiffusionModelBase):
 
     def calculate_QISF(self, Q: Q_type | None = None) -> np.ndarray:
         """
-        Calculate the total Quasi-Elastic Incoherent Structure Factor (QISF), the sum of the
-        weights of all Lorentzians.
+        Calculate the total Quasi-Elastic Incoherent Structure Factor (QISF), the sum of the QISF
+        of all 21 (N - 1) orders.
 
         Parameters
         ----------
@@ -448,7 +450,8 @@ class JumpSitesLogNormalDistribution(DeltaLorentzianDiffusionModelBase):
 
     def _circle_structure_factors(self, Q: np.ndarray) -> sc.Variable:
         r"""
-        Calculate the circle weights A_l(Q) of all circle orders l = 0 ... N - 1 with Scipp.
+        Calculate the circle model's EISF and QISF, $A_l(Q)$ for all circle orders
+        $l = 0 \ldots N - 1$, with Scipp.
 
         $A_l(Q) = \frac{1}{N} \sum_{k=1}^{N} j_0(Q r_k) \cos(2\pi l k / N)$ with
         $r_k = 2R\sin(\pi k / N)$, as in EquivalentSitesCircle. The variance of the radius is not
@@ -462,7 +465,7 @@ class JumpSitesLogNormalDistribution(DeltaLorentzianDiffusionModelBase):
         Returns
         -------
         sc.Variable
-            Dimensionless weights with dims ``('Q', 'l')``.
+            Dimensionless $A_l(Q)$ with dims ``('Q', 'l')``; l = 0 is the EISF.
         """
         N = self.number_of_sites
         site = sc.arange('k', 1.0, N + 1.0)
@@ -481,8 +484,8 @@ class JumpSitesLogNormalDistribution(DeltaLorentzianDiffusionModelBase):
 
     def _create_weight(self, Q: float, order: int) -> Parameter:
         """
-        Create the dimensionless weight g_s A_l(Q) as a dependent Parameter that follows the
-        radius.
+        Create the EISF ($j = 0$) or the QISF of order $j$, $g_s A_l(Q)$, as a dimensionless
+        dependent Parameter that follows the radius.
 
         The dependency expressions cannot call Scipp, so the circle's sum over sites is written
         out with NumPy's sinc, sinc(x) = sin(pi x) / (pi x), and multiplied by the constant g_s.
@@ -493,7 +496,7 @@ class JumpSitesLogNormalDistribution(DeltaLorentzianDiffusionModelBase):
         Q : float
             Scattering vector in 1/angstrom.
         order : int
-            The order j; 0 for the delta function.
+            The order j; 0 for the delta function (the EISF).
 
         Raises
         ------

@@ -33,11 +33,17 @@ class EquivalentSitesCircle(DeltaLorentzianDiffusionModelBase):
 
     where $R$ is the radius of the circle, $\tau$ the residence time on a site, $j_0(x) = \sin(x)
     / x$, and $L(E, \Gamma)$ a Lorentzian with half width at half maximum $\Gamma$. $A_0$ is the
-    EISF, and the weights of all orders sum to one. For $N = 2$ this is the two-site jump model,
-    with jump distance $2R$ and $\Gamma_1 = 2\hbar/\tau$. Mantid's ``DiffRotDiscreteCircle``
-    writes $4 \sin^2(\pi l / N) / \tau$, so its $\tau$ is twice the residence time used here.
+    EISF and $A_l$ ($l \geq 1$) the QISF of order $l$; they sum to one. For $N = 2$ this is the
+    two-site jump model, with jump distance $2R$ and $\Gamma_1 = 2\hbar/\tau$. Mantid's
+    ``DiffRotDiscreteCircle`` writes $4 \sin^2(\pi l / N) / \tau$, so its $\tau$ is twice the
+    residence time used here.
 
     The radius is fixed by default, since it is normally known from the molecular geometry.
+
+    References
+    ----------
+    1. J. D. Barnes, J. Chem. Phys. 58, 5193 (1973), doi:10.1063/1.1679130.
+    2. M. Bée, Quasielastic Neutron Scattering, Adam Hilger, Bristol (1988).
 
     Examples
     --------
@@ -58,11 +64,6 @@ class EquivalentSitesCircle(DeltaLorentzianDiffusionModelBase):
     )
     component_collections = model.create_component_collections()
     ```
-
-    References
-    ----------
-    1. J. D. Barnes, J. Chem. Phys. 58, 5193 (1973), doi:10.1063/1.1679130.
-    2. M. Bée, Quasielastic Neutron Scattering, Adam Hilger, Bristol (1988).
     """
 
     _order_symbol = 'l'  # components are named '<lorentzian_name>_l<l>'
@@ -286,7 +287,7 @@ class EquivalentSitesCircle(DeltaLorentzianDiffusionModelBase):
 
     def calculate_EISF(self, Q: Q_type | None = None) -> np.ndarray:
         """
-        Calculate the Elastic Incoherent Structure Factor (EISF), A_0(Q).
+        Calculate the Elastic Incoherent Structure Factor (EISF), $A_0(Q)$.
 
         Parameters
         ----------
@@ -303,7 +304,8 @@ class EquivalentSitesCircle(DeltaLorentzianDiffusionModelBase):
 
     def calculate_QISF_order(self, Q: Q_type | None = None, order: int = 1) -> np.ndarray:
         """
-        Calculate the quasi-elastic weight A_l(Q) of the Lorentzian of a given order.
+        Calculate the Quasi-Elastic Incoherent Structure Factor (QISF) of one order, $A_l(Q)$, the
+        weight of the Lorentzian of order $l$.
 
         Parameters
         ----------
@@ -315,7 +317,7 @@ class EquivalentSitesCircle(DeltaLorentzianDiffusionModelBase):
         Returns
         -------
         np.ndarray
-            Weights (dimensionless).
+            QISF values of that order (dimensionless).
         """
         self._verify_order(order)
         Q = self._ensure_Q(Q)
@@ -323,8 +325,8 @@ class EquivalentSitesCircle(DeltaLorentzianDiffusionModelBase):
 
     def calculate_QISF(self, Q: Q_type | None = None) -> np.ndarray:
         """
-        Calculate the total Quasi-Elastic Incoherent Structure Factor (QISF), the sum of the
-        weights of all N - 1 Lorentzians.
+        Calculate the total Quasi-Elastic Incoherent Structure Factor (QISF), the sum of the QISF
+        of all N - 1 orders.
 
         Parameters
         ----------
@@ -356,7 +358,7 @@ class EquivalentSitesCircle(DeltaLorentzianDiffusionModelBase):
 
     def _structure_factors(self, Q: np.ndarray) -> sc.Variable:
         r"""
-        Calculate the weights A_l(Q) of all orders l = 0 ... N - 1 with Scipp.
+        Calculate the EISF and the QISF, $A_l(Q)$ for all orders $l = 0 \ldots N - 1$, with Scipp.
 
         $A_l(Q) = \frac{1}{N} \sum_{k=1}^{N} j_0(Q r_k) \cos(2\pi l k / N)$ with
         $r_k = 2R\sin(\pi k / N)$. The variance of the radius is not propagated.
@@ -369,7 +371,7 @@ class EquivalentSitesCircle(DeltaLorentzianDiffusionModelBase):
         Returns
         -------
         sc.Variable
-            Dimensionless weights with dims ``('Q', 'order')``.
+            Dimensionless $A_l(Q)$ with dims ``('Q', 'order')``; order 0 is the EISF.
         """
         N = self.number_of_sites
         site = sc.arange('k', 1.0, N + 1.0)
@@ -386,8 +388,9 @@ class EquivalentSitesCircle(DeltaLorentzianDiffusionModelBase):
         return (weights / N).transpose(['Q', 'order'])
 
     def _create_weight(self, Q: float, order: int) -> Parameter:
-        """
-        Create the dimensionless weight A_l(Q) as a dependent Parameter that follows the radius.
+        r"""
+        Create the EISF ($l = 0$) or the QISF of order $l$, $A_l(Q)$, as a dimensionless dependent
+        Parameter that follows the radius.
 
         The dependency expressions cannot call Scipp, so the sum over sites is written out with
         NumPy's sinc, sinc(x) = sin(pi x) / (pi x). Keeping the weight separate from the scale
@@ -398,7 +401,7 @@ class EquivalentSitesCircle(DeltaLorentzianDiffusionModelBase):
         Q : float
             Scattering vector in 1/angstrom.
         order : int
-            The order l; 0 for the delta function.
+            The order l; 0 for the delta function (the EISF).
 
         Raises
         ------
