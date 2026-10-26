@@ -43,6 +43,13 @@ CASES = {
         {'scale': 1.0, 'residence_time': 2.0, 'sigma': 0.5},
         {'scale': 0.8, 'residence_time': 1.5, 'sigma': 0.7},
     ),
+    # QR <= 1.5 keeps the default 10 terms below the truncation warning
+    'DiffusionInSphere': (
+        edyn.DiffusionInSphere,
+        {},
+        {'scale': 1.0, 'radius': 1.0, 'diffusion_coefficient': 0.1},
+        {'scale': 0.8, 'radius': 0.8, 'diffusion_coefficient': 0.07},
+    ),
 }
 
 

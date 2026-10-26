@@ -8,6 +8,7 @@ from easydynamics.sample_model.diffusion_model.chudley_elliott_jump_diffusion im
     ChudleyElliottJumpDiffusion,
 )
 from easydynamics.sample_model.diffusion_model.delta_lorentz import DeltaLorentz
+from easydynamics.sample_model.diffusion_model.diffusion_in_sphere import DiffusionInSphere
 from easydynamics.sample_model.diffusion_model.equivalent_sites_circle import EquivalentSitesCircle
 from easydynamics.sample_model.diffusion_model.gaussian_model_3d import GaussianModel3D
 from easydynamics.sample_model.diffusion_model.hall_ross_jump_diffusion import (
@@ -27,6 +28,7 @@ __all__ = [
     'BrownianTranslationalDiffusion',
     'ChudleyElliottJumpDiffusion',
     'DeltaLorentz',
+    'DiffusionInSphere',
     'EquivalentSitesCircle',
     'GaussianModel3D',
     'HallRossJumpDiffusion',

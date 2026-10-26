@@ -31,6 +31,7 @@ from easydynamics.sample_model import DampedHarmonicOscillator
 from easydynamics.sample_model import DeltaFunction
 from easydynamics.sample_model import DeltaLorentz
 from easydynamics.sample_model import DiffusionDampedMittagLeffler
+from easydynamics.sample_model import DiffusionInSphere
 from easydynamics.sample_model import EquivalentSitesCircle
 from easydynamics.sample_model import Exponential
 from easydynamics.sample_model import ExpressionComponent
@@ -72,6 +73,7 @@ __all__ = [
     'DeltaLorentz',
     'DetailedBalanceSettings',
     'DiffusionDampedMittagLeffler',
+    'DiffusionInSphere',
     'EasyDynamicsBase',
     'EasyDynamicsModelBase',
     'EquivalentSitesCircle',
