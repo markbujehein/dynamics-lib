@@ -26,7 +26,13 @@ MISSING_WEIGHT_TOLERANCE = 1e-3  # Truncating the sum above this loss of weight 
 
 class GaussianModel3D(DeltaLorentzianDiffusionModelBase):
     r"""
-    Model of diffusion in a three-dimensional harmonic (Gaussian) confinement (Volino).
+    Model of diffusion inside an isotropic three-dimensional harmonic well.
+
+    A particle diffuses with diffusion coefficient $D$ in a harmonic potential that is the same
+    in all three directions, so its position about the centre of the well has a Gaussian
+    distribution. $\langle u^2 \rangle$ is the mean square distance from the centre, summed over
+    the three directions; along any one direction it is $\langle u^2 \rangle / 3$. Because the
+    well is isotropic, the scattering depends only on the magnitude of $Q$:
 
     $$ S(Q, E) = A_0(Q)\,\delta(E) + \sum_{i=1}^{n} A_i(Q)\, L(E, \Gamma_i) $$
 
@@ -35,16 +41,17 @@ class GaussianModel3D(DeltaLorentzianDiffusionModelBase):
     $$ A_i(Q) = e^{-y} \frac{y^i}{i!}, \quad y = \frac{Q^2 \langle u^2 \rangle}{3},
     \quad \Gamma_i = \frac{3 i \hbar D}{\langle u^2 \rangle} $$
 
-    where $D$ is the diffusion coefficient, $\langle u^2 \rangle$ the mean square displacement
-    and $L(E, \Gamma)$ a Lorentzian with half width at half maximum $\Gamma$. $A_i$ is the
-    QISF of order $i$, and the EISF $A_0 = \exp(-\langle u^2 \rangle Q^2 / 3)$ is the same
-    Debye-Waller factor as in ``DeltaLorentz``. Volino's paper writes the model with the
-    variance along one axis, $\langle u_x^2 \rangle = \langle u^2 \rangle / 3$.
+    where $L(E, \Gamma)$ is a Lorentzian with half width at half maximum $\Gamma$. $A_0 = e^{-y}$
+    is the EISF, the same Debye-Waller factor as in ``DeltaLorentz``, and $A_i$ is the QISF of
+    order $i$. The widths $\Gamma_i$ grow linearly with $i$ and do not depend on $Q$; only the
+    QISF do. The paper writes the model with the variance along one direction,
+    $\langle u_x^2 \rangle = \langle u^2 \rangle / 3$.
 
-    The weights form a Poisson distribution in $i$, so the infinite sum is truncated at
-    $n$ = ``number_of_lorentzians``. A warning is raised if the truncation omits more than 1e-3
-    of the spectral weight at any of the Q values; $n$ must be well above $y$. The omitted
-    weights are available from ``calculate_missing_weight``.
+    The QISF form a Poisson distribution in $i$ with mean $y$, and together with the EISF they
+    sum to one. The infinite sum is therefore truncated at $n$ = ``number_of_lorentzians``, which
+    must be well above $y$ at the largest $Q$. A warning is raised if the truncation leaves out
+    more than 1e-3 of the total weight at any of the model's Q values, and
+    ``calculate_missing_weight`` returns the weight left out.
 
     References
     ----------
@@ -63,8 +70,8 @@ class GaussianModel3D(DeltaLorentzianDiffusionModelBase):
     Q = np.linspace(0.5, 2, 7)
     model = edyn.GaussianModel3D(
         scale=1.0,
-        diffusion_coefficient=2e-9,
-        mean_u_squared=1.5,
+        diffusion_coefficient=2e-9,  # m^2/s
+        mean_u_squared=1.5,  # angstrom^2
         number_of_lorentzians=20,
         Q=Q,
     )
