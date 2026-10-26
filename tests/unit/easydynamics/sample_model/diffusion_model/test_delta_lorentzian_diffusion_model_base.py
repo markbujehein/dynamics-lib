@@ -15,14 +15,14 @@ from easydynamics.utils.utils import Q_type
 WEIGHTS = [0.5, 0.3, 0.15, 0.05]
 
 
-class Toy(DeltaLorentzianDiffusionModelBase):
+class DummyDiffusionModel(DeltaLorentzianDiffusionModelBase):
     """Test-only model with constant weights and widths order * w."""
 
     _order_symbol = 'k'
 
     def __init__(self, number_of_lorentzians: int = 3, **kwargs) -> None:
-        kwargs.setdefault('name', 'Toy')
-        kwargs.setdefault('display_name', 'Toy')
+        kwargs.setdefault('name', 'Dummy')
+        kwargs.setdefault('display_name', 'Dummy')
         super().__init__(number_of_lorentzians, **kwargs)
         self.w = Parameter(name='w', value=0.1, unit='meV')
         self.create_component_collections()
@@ -49,8 +49,8 @@ class Toy(DeltaLorentzianDiffusionModelBase):
 
 
 @pytest.fixture
-def toy():
-    return Toy(scale=2.0, Q=np.array([0.5, 1.0]))
+def dummy():
+    return DummyDiffusionModel(scale=2.0, Q=np.array([0.5, 1.0]))
 
 
 # ----------------------------------------------------------------------
@@ -58,41 +58,41 @@ def toy():
 # ----------------------------------------------------------------------
 
 
-def test_component_names_use_symbol(toy):
+def test_component_names_use_symbol(dummy):
     # WHEN
-    components = toy.get_component_collections()[0][:]
+    components = dummy.get_component_collections()[0][:]
 
     # THEN EXPECT
-    assert toy.lorentzian_component_name(2) == 'Toy_k2'
-    assert [c.name for c in components] == ['Delta function', 'Toy_k1', 'Toy_k2', 'Toy_k3']
-    assert components[1].display_name == 'Toy_k1'
+    assert dummy.lorentzian_component_name(2) == 'Dummy_k2'
+    assert [c.name for c in components] == ['Delta function', 'Dummy_k1', 'Dummy_k2', 'Dummy_k3']
+    assert components[1].display_name == 'Dummy_k1'
 
 
-def test_components_have_weights_and_widths(toy):
+def test_components_have_weights_and_widths(dummy):
     # WHEN THEN EXPECT
-    for collection in toy.get_component_collections():
+    for collection in dummy.get_component_collections():
         delta, *lorentzians = collection[:]
         assert delta.area.value == pytest.approx(1.0)
         assert [c.area.value for c in lorentzians] == pytest.approx([0.6, 0.3, 0.1])
         assert [c.width.value for c in lorentzians] == pytest.approx([0.1, 0.2, 0.3])
 
 
-def test_areas_follow_scale(toy):
+def test_areas_follow_scale(dummy):
     # WHEN
-    toy.scale.value = 4.0
+    dummy.scale.value = 4.0
 
     # THEN EXPECT
-    assert toy.get_component_collections()[0][1].area.value == pytest.approx(1.2)
+    assert dummy.get_component_collections()[0][1].area.value == pytest.approx(1.2)
 
 
 def test_setting_Q_builds_collections():
     # WHEN
-    toy = Toy()
+    dummy = DummyDiffusionModel()
 
     # THEN EXPECT
-    assert toy.get_component_collections() == []
-    toy.Q = [0.5]
-    assert len(toy.get_component_collections()[0][:]) == 4
+    assert dummy.get_component_collections() == []
+    dummy.Q = [0.5]
+    assert len(dummy.get_component_collections()[0][:]) == 4
 
 
 # ----------------------------------------------------------------------
@@ -101,36 +101,60 @@ def test_setting_Q_builds_collections():
 
 
 @pytest.mark.parametrize('order', [0, 4, 1.5, True])
-def test_order_out_of_range_raises(toy, order):
+def test_order_out_of_range_raises(dummy, order):
     # WHEN THEN EXPECT
     with pytest.raises((TypeError, ValueError), match='order must be'):
-        toy.lorentzian_component_name(order)
+        dummy.lorentzian_component_name(order)
 
 
 @pytest.mark.parametrize('n, error', [(0, ValueError), (1.0, TypeError), (True, TypeError)])
 def test_number_of_lorentzians_validated(n, error):
     # WHEN THEN EXPECT
     with pytest.raises(error, match='number_of_lorentzians must be'):
-        Toy(number_of_lorentzians=n)
+        DummyDiffusionModel(number_of_lorentzians=n)
 
 
-def test_number_of_lorentzians_read_only(toy):
+def test_number_of_lorentzians_read_only(dummy):
     # WHEN THEN EXPECT
-    assert toy.number_of_lorentzians == 3
+    assert dummy.number_of_lorentzians == 3
     with pytest.raises(AttributeError):
-        toy.number_of_lorentzians = 2
+        dummy.number_of_lorentzians = 2
 
 
 @pytest.mark.parametrize('kwargs', [{'delta_name': 1}, {'delta_display_name': 1}])
 def test_delta_names_validated(kwargs):
     # WHEN THEN EXPECT
     with pytest.raises(TypeError):
-        Toy(**kwargs)
+        DummyDiffusionModel(**kwargs)
+
+
+@pytest.mark.parametrize('display_name', ['Elastic line', None])
+def test_delta_name_setters(dummy, display_name):
+    # WHEN
+    dummy.delta_name = 'Elastic'
+    dummy.delta_display_name = display_name
+
+    # THEN EXPECT
+    assert dummy.delta_name == 'Elastic'
+    assert dummy.delta_display_name == display_name
+
+
+@pytest.mark.parametrize(
+    'attribute, message',
+    [
+        ('delta_name', 'delta_name must be a string'),
+        ('delta_display_name', 'delta_display_name must be a string or None'),
+    ],
+)
+def test_delta_name_setters_reject_non_strings(dummy, attribute, message):
+    # WHEN THEN EXPECT
+    with pytest.raises(TypeError, match=message):
+        setattr(dummy, attribute, 1)
 
 
 def test_incomplete_subclass_cannot_be_created():
     # WHEN
-    class NoEISF(Toy):
+    class NoEISF(DummyDiffusionModel):
         calculate_EISF = DeltaLorentzianDiffusionModelBase.calculate_EISF
 
     # THEN EXPECT
@@ -143,9 +167,9 @@ def test_incomplete_subclass_cannot_be_created():
 # ----------------------------------------------------------------------
 
 
-def test_fit_target_names(toy):
+def test_fit_target_names(dummy):
     # WHEN THEN EXPECT
-    assert [t.name for t in toy.get_fit_targets()] == [
+    assert [t.name for t in dummy.get_fit_targets()] == [
         'elastic_area',
         'area_1',
         'width_1',
@@ -156,9 +180,9 @@ def test_fit_target_names(toy):
     ]
 
 
-def test_fit_target_values(toy):
+def test_fit_target_values(dummy):
     # WHEN
-    targets = {t.name: t for t in toy.get_fit_targets()}
+    targets = {t.name: t for t in dummy.get_fit_targets()}
     Q = np.array([0.5])
 
     # THEN EXPECT
@@ -167,11 +191,11 @@ def test_fit_target_values(toy):
     np.testing.assert_allclose(targets['width_3'].function(Q), [0.3])
 
 
-def test_fit_target_keys_follow_names(toy):
+def test_fit_target_keys_follow_names(dummy):
     # WHEN
-    toy.delta_name = 'Elastic'
-    targets = toy.get_fit_targets()
+    dummy.delta_name = 'Elastic'
+    targets = dummy.get_fit_targets()
 
     # THEN EXPECT
     assert targets[0].dataset_key == 'Elastic area'
-    assert targets[1].dataset_key == 'Toy_k1 area'
+    assert targets[1].dataset_key == 'Dummy_k1 area'
